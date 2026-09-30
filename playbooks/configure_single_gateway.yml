@@ -37,9 +37,6 @@
           - role: controller_hosts
             var: controller_hosts
             tags: hosts
-          - role: controller_groups
-            var: controller_groups
-            tags: groups
           - role: controller_job_templates
             var: controller_templates
             tags: job_templates

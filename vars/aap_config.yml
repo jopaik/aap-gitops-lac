@@ -42,6 +42,15 @@ controller_inventories:
   - name: "Multi-DC Production Inventory"
     description: "Production Inventory spanning DC1 and DC2"
     organization: "Default"
+    groups:
+      - name: "dc1"
+        targets:
+          - "dc1_host_1"
+          - "dc1_host_2"
+      - name: "dc2"
+        targets:
+          - "dc2_host_3"
+          - "dc2_host_4"
 
 controller_hosts:
   - name: "dc1_host_1"
@@ -61,17 +70,6 @@ controller_hosts:
     variables:
       ansible_host: "127.0.0.1"
 
-controller_groups:
-  - name: "dc1"
-    inventory: "Multi-DC Production Inventory"
-    hosts:
-      - "dc1_host_1"
-      - "dc1_host_2"
-  - name: "dc2"
-    inventory: "Multi-DC Production Inventory"
-    hosts:
-      - "dc2_host_3"
-      - "dc2_host_4"
 
 controller_templates:
   - name: "Deploy Workload Job"
