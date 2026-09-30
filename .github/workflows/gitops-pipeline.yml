@@ -4,53 +4,35 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
-    inputs:
-      action:
-        description: 'Pipeline Action'
-        required: true
-        default: 'sync_and_dispatch'
-        type: choice
-        options:
-          - sync_and_dispatch
-          - sync_only
-          - dispatch_only
 
 jobs:
   gitops-execution:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code Repository
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v5
 
       - name: Set up Python Environment
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
-      - name: Install Ansible & Galaxy Collections
+      - name: Install Ansible & Collections
         run: |
-                pip install ansible-core
-                ansible-galaxy collection install community.general --force
-                ansible-galaxy collection install -r collections/requirements.yml \
-                  --force \
-                  --no-deps \
-                  --timeout 120
+          pip install ansible-core
+          ansible-galaxy collection install awx.awx --force
+          ansible-galaxy collection install -r collections/requirements.yml --force
 
       - name: Create Vault Password File
         run: |
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
           chmod 600 .vault_pass
 
-      - name: Sync Infrastructure Configurations (AAP 2.6 IaC)
-        env:
-          ANSIBLE_STDOUT_CALLBACK: default
-          ANSIBLE_RESULT_FORMAT: yaml
-        if: ${{ github.event_name == 'push' || inputs.action == 'sync_and_dispatch' || inputs.action == 'sync_only' }}
+      - name: Apply AAP Infrastructure Configurations
         run: |
           ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass
 
-      - name: Round-Robin Health Check and Job Launch
-        if: ${{ github.event_name == 'push' || inputs.action == 'sync_and_dispatch' || inputs.action == 'dispatch_only' }}
+      - name: Round-Robin Job Dispatch
         run: |
           ansible-playbook playbooks/dispatch_round_robin.yml --vault-password-file .vault_pass
 
