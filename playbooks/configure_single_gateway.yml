@@ -1,10 +1,15 @@
 ---
 - name: "Configure AAP Platform Node: {{ current_aap.name }}"
   block:
-    - name: Apply Controller Configuration
+    - name: Apply AAP Controller Configurations
       ansible.builtin.include_role:
-        name: infra.aap_configuration.controller_config
+        name: infra.aap_configuration.dispatch
       vars:
+        # infra.aap_configuration dispatch options
+        aap_configuration_dispatcher_roles:
+          - controller
+        
+        # Connection parameters
         controller_hostname: "{{ current_aap.host }}"
         controller_username: "{{ current_aap.username }}"
         controller_password: "{{ current_aap.password }}"

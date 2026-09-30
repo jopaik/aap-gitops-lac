@@ -1,5 +1,5 @@
 ---
-# Dual AAP Gateway Endpoints
+# Dual AAP Gateway Platform Endpoints
 aap_instances:
   - name: "AAP-Platform-Alpha"
     host: "{{ vault_aap_gateway_a_url }}"
@@ -12,7 +12,7 @@ aap_instances:
     password: "{{ vault_aap_gateway_b_password }}"
     validate_certs: false
 
-# Map variables to infra.aap_configuration controller schema
+# Declarative AAP Configuration Data
 controller_organizations:
   - name: "Default"
     description: "Primary Enterprise Organization"
@@ -30,7 +30,7 @@ controller_projects:
   - name: "GitOps Application Configs"
     description: "Managed via GitOps IaC Pipeline"
     scm_type: "git"
-    scm_url: "https://github.com/example/aap-gitops-lac.git"
+    scm_url: "https://github.com/jopaik/aap-gitops-lac.git"
     scm_branch: "main"
     organization: "Default"
 
