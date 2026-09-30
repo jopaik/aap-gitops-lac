@@ -5,10 +5,11 @@
       ansible.builtin.include_role:
         name: infra.aap_configuration.dispatch
       vars:
-        # Force infra.aap_configuration to use awx.awx modules instead of ansible.controller
+        # Force infra.aap_configuration to map module calls to awx.awx
         infra_aap_configuration_use_awx_collection: true
+        controller_configuration_use_awx_collection: true
 
-        # Explicit list of Controller roles to dispatch
+        # Restrict execution matrix exclusively to Controller roles
         controller_configuration_dispatcher_roles:
           - role: controller_organizations
             var: controller_organizations
@@ -26,7 +27,9 @@
             var: controller_templates
             tags: job_templates
 
-        # Target connection settings
+        aap_configuration_dispatcher_roles: "{{ controller_configuration_dispatcher_roles }}"
+
+        # Connection settings
         controller_hostname: "{{ current_aap.host }}"
         controller_username: "{{ current_aap.username }}"
         controller_password: "{{ current_aap.password }}"
