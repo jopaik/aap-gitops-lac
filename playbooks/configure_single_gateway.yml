@@ -1,27 +1,19 @@
 ---
 - name: "Configure AAP Platform Node: {{ current_aap.name }}"
-  vars:
-    controller_hostname: "{{ current_aap.host }}"
-    controller_username: "{{ current_aap.username }}"
-    controller_password: "{{ current_aap.password }}"
-    controller_validate_certs: "{{ current_aap.validate_certs }}"
-
-    aap_configuration_use_awx_collection: false
-    infra_aap_configuration_use_awx_collection: false
-
-    # Force zero delay to eliminate async tracking
-    controller_configuration_async_timeout: 0
-    aap_configuration_async_timeout: 0
-    controller_configuration_async_delay: 0
-    aap_configuration_async_delay: 0
-
   block:
     - name: Configure Controller Organizations
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.controller_organizations
+      ansible.controller.organization:
+        name: "{{ item.name }}"
+        description: "{{ item.description | default(omit) }}"
+        state: present
+        controller_host: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        validate_certs: "{{ current_aap.validate_certs }}"
+      loop: "{{ controller_organizations }}"
       when: controller_organizations is defined
 
-    - name: Configure Controller Credentials (Native Direct)
+    - name: Configure Controller Credentials
       ansible.controller.credential:
         name: "{{ item.name }}"
         description: "{{ item.description | default(omit) }}"
@@ -35,24 +27,75 @@
         validate_certs: "{{ current_aap.validate_certs }}"
       loop: "{{ controller_credentials }}"
       when: controller_credentials is defined
-      no_log: false  # Explicitly unhide payload output for debugging
 
     - name: Configure Controller Projects
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.controller_projects
+      ansible.controller.project:
+        name: "{{ item.name }}"
+        description: "{{ item.description | default(omit) }}"
+        scm_type: "{{ item.scm_type }}"
+        scm_url: "{{ item.scm_url }}"
+        scm_branch: "{{ item.scm_branch | default(omit) }}"
+        scm_update_on_launch: "{{ item.scm_update_on_launch | default(omit) }}"
+        organization: "{{ item.organization }}"
+        wait: "{{ item.wait | default(true) }}"
+        state: present
+        controller_host: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        validate_certs: "{{ current_aap.validate_certs }}"
+      loop: "{{ controller_projects }}"
       when: controller_projects is defined
 
     - name: Configure Controller Inventories
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.controller_inventories
+      ansible.controller.inventory:
+        name: "{{ item.name }}"
+        description: "{{ item.description | default(omit) }}"
+        organization: "{{ item.organization }}"
+        state: present
+        controller_host: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        validate_certs: "{{ current_aap.validate_certs }}"
+      loop: "{{ controller_inventories }}"
       when: controller_inventories is defined
 
     - name: Configure Controller Hosts
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.controller_hosts
+      ansible.controller.host:
+        name: "{{ item.name }}"
+        inventory: "{{ item.inventory }}"
+        variables: "{{ item.variables | default(omit) }}"
+        state: present
+        controller_host: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        validate_certs: "{{ current_aap.validate_certs }}"
+      loop: "{{ controller_hosts }}"
       when: controller_hosts is defined
 
+    - name: Configure Controller Groups
+      ansible.controller.group:
+        name: "{{ item.name }}"
+        inventory: "{{ item.inventory }}"
+        hosts: "{{ item.hosts | default(omit) }}"
+        state: present
+        controller_host: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        validate_certs: "{{ current_aap.validate_certs }}"
+      loop: "{{ controller_groups }}"
+      when: controller_groups is defined
+
     - name: Configure Controller Job Templates
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.controller_job_templates
+      ansible.controller.job_template:
+        name: "{{ item.name }}"
+        project: "{{ item.project }}"
+        playbook: "{{ item.playbook }}"
+        inventory: "{{ item.inventory }}"
+        job_type: "{{ item.job_type | default('run') }}"
+        state: present
+        controller_host: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        validate_certs: "{{ current_aap.validate_certs }}"
+      loop: "{{ controller_templates }}"
       when: controller_templates is defined
