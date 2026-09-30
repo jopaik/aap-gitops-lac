@@ -30,6 +30,7 @@ jobs:
       - name: Install Ansible & Galaxy Collections
         run: |
                 pip install ansible-core
+                ansible-galaxy collection install community.general --force
                 ansible-galaxy collection install -r collections/requirements.yml \
                   --force \
                   --no-deps \
