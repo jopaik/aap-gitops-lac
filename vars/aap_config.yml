@@ -1,0 +1,66 @@
+---
+# Dual AAP 2.6 Gateway Platform Endpoints
+aap_instances:
+  - name: "AAP-Platform-Alpha"
+    host: "https://aap-gateway-a.example.com"
+    username: "admin"
+    password: "{{ vault_aap_gateway_a_password }}"
+    validate_certs: false
+  - name: "AAP-Platform-Beta"
+    host: "https://aap-gateway-b.example.com"
+    username: "admin"
+    password: "{{ vault_aap_gateway_b_password }}"
+    validate_certs: false
+
+# Platform Infrastructure Definitions
+aap_organizations:
+  - name: "Default"
+    description: "Primary Enterprise Organization"
+
+aap_credentials:
+  - name: "Production SSH Key"
+    description: "Machine SSH Credential"
+    credential_type: "Machine"
+    organization: "Default"
+    inputs:
+      username: "ansible"
+      ssh_key_data: "{{ vault_ssh_private_key }}"
+
+aap_projects:
+  - name: "GitOps Application Configs"
+    description: "Managed via GitOps IaC Pipeline"
+    scm_type: "git"
+    scm_url: "https://github.com/example/aap-gitops-lac.git"
+    scm_branch: "main"
+    organization: "Default"
+
+aap_inventories:
+  - name: "Multi-DC Production Inventory"
+    description: "Production Inventory spanning DC1 and DC2"
+    organization: "Default"
+    hosts:
+      dc1_host_1:
+        ansible_host: "127.0.0.1"
+      dc1_host_2:
+        ansible_host: "127.0.0.1"
+      dc2_host_3:
+        ansible_host: "127.0.0.1"
+      dc2_host_4:
+        ansible_host: "127.0.0.1"
+    groups:
+      dc1:
+        hosts:
+          - dc1_host_1
+          - dc1_host_2
+      dc2:
+        hosts:
+          - dc2_host_3
+          - dc2_host_4
+
+aap_job_templates:
+  - name: "Deploy Workload Job"
+    project: "GitOps Application Configs"
+    playbook: "playbooks/demorun.yml"
+    inventory: "Multi-DC Production Inventory"
+    credentials:
+      - "Production SSH Key"

@@ -1,0 +1,13 @@
+---
+- name: Configure AAP 2.6 Platforms via Gateway
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../vars/aap_config.yml
+
+  tasks:
+    - name: Apply IaC Configuration to Each AAP Cluster
+      ansible.builtin.include_tasks: configure_single_gateway.yml
+      loop: "{{ aap_instances }}"
+      loop_control:
+        loop_var: current_aap

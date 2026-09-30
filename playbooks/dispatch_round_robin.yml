@@ -1,0 +1,81 @@
+---
+- name: Ping Check, Round-Robin Balance, and Dispatch AAP Job
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../vars/aap_config.yml
+  vars:
+    target_job_template: "Deploy Workload Job"
+    state_file: "/tmp/aap_rr_state.txt"
+
+  tasks:
+    - name: Step 1 - Ping Gateway Health Check
+      ansible.builtin.uri:
+        url: "{{ item.host }}/api/gateway/v1/ping/"
+        method: GET
+        user: "{{ item.username }}"
+        password: "{{ item.password }}"
+        force_basic_auth: true
+        validate_certs: "{{ item.validate_certs }}"
+        status_code: 200
+      register: ping_results
+      ignore_errors: true
+      loop: "{{ aap_instances }}"
+
+    - name: Filter Healthy AAP Clusters
+      ansible.builtin.set_fact:
+        healthy_instances: "{{ healthy_instances | default([]) + [item.item] }}"
+      when: item.status == 200
+      loop: "{{ ping_results.results }}"
+
+    - name: Verify at least one AAP Gateway is Online
+      ansible.builtin.assert:
+        that:
+          - healthy_instances is defined
+          - healthy_instances | length > 0
+        fail_msg: "CRITICAL: All target AAP 2.6 Gateway instances failed the health check."
+
+    - name: Step 2 - Read Last Round-Robin Pointer
+      ansible.builtin.slurp:
+        src: "{{ state_file }}"
+      register: raw_state
+      ignore_errors: true
+
+    - name: Calculate Round-Robin Next Index
+      ansible.builtin.set_fact:
+        current_index: "{{ (raw_state.content | default('MA==') | b64decode | trim | int) if (raw_state.content is defined) else 0 }}"
+
+    - name: Determine Target Node and Update Index
+      ansible.builtin.set_fact:
+        selected_index: "{{ current_index | int % healthy_instances | length }}"
+        next_index: "{{ (current_index | int + 1) % healthy_instances | length }}"
+
+    - name: Set Selected Instance Fact
+      ansible.builtin.set_fact:
+        selected_aap: "{{ healthy_instances[selected_index | int] }}"
+
+    - name: Step 3 - Persist Updated Index State
+      ansible.builtin.copy:
+        content: "{{ next_index }}"
+        dest: "{{ state_file }}"
+        mode: '0644'
+
+    - name: Display Selected Target Node
+      ansible.builtin.debug:
+        msg: "Dispatching Job to Platform: {{ selected_aap.name }} ({{ selected_aap.host }})"
+
+    - name: Step 4 - Launch Job via Selected AAP Controller
+      infra.aap_configuration.job_launch:
+        aap_hostname: "{{ selected_aap.host }}"
+        aap_username: "{{ selected_aap.username }}"
+        aap_password: "{{ selected_aap.password }}"
+        aap_validate_certs: "{{ selected_aap.validate_certs }}"
+        job_template: "{{ target_job_template }}"
+        extra_vars:
+          aap_platform_name: "{{ selected_aap.name }}"
+        wait: true
+      register: launched_job
+
+    - name: Output Job Launch Results
+      ansible.builtin.debug:
+        var: launched_job.id

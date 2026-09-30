@@ -1,0 +1,45 @@
+name: AAP 2.6 GitOps Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Pipeline Action'
+        required: true
+        default: 'sync_and_dispatch'
+        type: choice
+        options:
+          - sync_and_dispatch
+          - sync_only
+          - dispatch_only
+
+jobs:
+  gitops-execution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible & Galaxy Collections
+        run: |
+          pip install ansible-core
+          ansible-galaxy collection install -r collections/requirements.yml
+
+      - name: Sync Infrastructure Configurations (AAP 2.6 IaC)
+        if: ${{ github.event_name == 'push' || inputs.action == 'sync_and_dispatch' || inputs.action == 'sync_only' }}
+        env:
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          ansible-playbook playbooks/configure_aap.yml
+
+      - name: Round-Robin Health Check and Job Launch
+        if: ${{ github.event_name == 'push' || inputs.action == 'sync_and_dispatch' || inputs.action == 'dispatch_only' }}
+        run: |
+          ansible-playbook playbooks/dispatch_round_robin.yml

@@ -1,0 +1,20 @@
+---
+- name: Demo Run - Print Job ID and Host Information
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Display AAP Job ID and Platform Information
+      ansible.builtin.debug:
+        msg:
+          - "=========================================="
+          - " AAP JOB DETAILS"
+          - "=========================================="
+          - "AAP Platform Name   : {{ aap_platform_name | default(tower_user_first_name | default(awx_node_name | default('AAP-Platform-Local'))) }}"
+          - "Job ID              : {{ tower_job_id | default(awx_job_id | default(ansible_job_id | default('Run Locally / CLI'))) }}"
+          - "Job Template Name   : {{ tower_job_template_name | default('N/A') }}"
+          - "User Triggered By   : {{ tower_user_name | default('System/Automation') }}"
+
+    - name: Display Host Name
+      ansible.builtin.debug:
+        var: inventory_hostname

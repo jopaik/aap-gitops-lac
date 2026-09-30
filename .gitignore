@@ -1,0 +1,56 @@
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors & IDEs
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs & temp files
+*.log
+*.tmp
+*.temp
+tmp/
+tmp.*
+*.bak
+*.orig
+
+# Local / generated cluster dumps
+*.kubeconfig
+kubeconfig
+
+# Secrets & credentials (keep committed templates; ignore local overrides)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets.local.yml
+secrets.local.yaml
+*.secrets.yml
+*.secrets.yaml
+credentials.json
+pull-secret.txt
+.dockerconfigjson
+
+# Ansible
+*.retry
+
+# Python (if used for local scripts)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.python-version
