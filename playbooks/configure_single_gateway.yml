@@ -1,36 +1,33 @@
 ---
 - name: "Configure AAP Platform Node: {{ current_aap.name }}"
+  vars:
+    controller_hostname: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username }}"
+    controller_password: "{{ current_aap.password }}"
+    controller_validate_certs: "{{ current_aap.validate_certs }}"
+
   block:
-    - name: Apply AAP Controller Configurations
+    - name: Configure Organizations
       ansible.builtin.include_role:
-        name: infra.aap_configuration.dispatch
-      vars:
-        # Force infra.aap_configuration to map module calls to awx.awx
-        infra_aap_configuration_use_awx_collection: true
-        controller_configuration_use_awx_collection: true
+        name: awx.awx.controller_organizations
+      when: controller_organizations is defined
 
-        # Restrict execution matrix exclusively to Controller roles
-        controller_configuration_dispatcher_roles:
-          - role: controller_organizations
-            var: controller_organizations
-            tags: organizations
-          - role: controller_credentials
-            var: controller_credentials
-            tags: credentials
-          - role: controller_projects
-            var: controller_projects
-            tags: projects
-          - role: controller_inventories
-            var: controller_inventories
-            tags: inventories
-          - role: controller_job_templates
-            var: controller_templates
-            tags: job_templates
+    - name: Configure Credentials
+      ansible.builtin.include_role:
+        name: awx.awx.controller_credentials
+      when: controller_credentials is defined
 
-        aap_configuration_dispatcher_roles: "{{ controller_configuration_dispatcher_roles }}"
+    - name: Configure Projects
+      ansible.builtin.include_role:
+        name: awx.awx.controller_projects
+      when: controller_projects is defined
 
-        # Connection settings
-        controller_hostname: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        controller_validate_certs: "{{ current_aap.validate_certs }}"
+    - name: Configure Inventories
+      ansible.builtin.include_role:
+        name: awx.awx.controller_inventories
+      when: controller_inventories is defined
+
+    - name: Configure Job Templates
+      ansible.builtin.include_role:
+        name: awx.awx.controller_templates
+      when: controller_templates is defined
