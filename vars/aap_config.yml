@@ -17,10 +17,6 @@ controller_organizations:
   - name: "Default"
     description: "Primary Enterprise Organization"
 
-# Used when calling gateway_organizations
-aap_organizations:
-  - name: "Default"
-    description: "Primary Enterprise Organization"
 
 controller_credentials:
   - name: "Production SSH Key"
