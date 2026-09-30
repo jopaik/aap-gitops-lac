@@ -1,4 +1,7 @@
 ---
+# Force infra.aap_configuration to use awx.awx modules instead of ansible.controller
+infra_aap_configuration_use_awx_collection: true
+
 # Dual AAP Gateway Platform Endpoints
 aap_instances:
   - name: "AAP-Platform-Alpha"
@@ -62,5 +65,3 @@ controller_templates:
     project: "GitOps Application Configs"
     playbook: "playbooks/demorun.yml"
     inventory: "Multi-DC Production Inventory"
-    credentials:
-      - "Production SSH Key"
