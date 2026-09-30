@@ -5,7 +5,6 @@
       ansible.builtin.include_role:
         name: infra.aap_configuration.dispatch
       vars:
-        # Host endpoint mappings for dispatch engine
         aap_hostname: "{{ current_aap.host }}"
         aap_username: "{{ current_aap.username }}"
         aap_password: "{{ current_aap.password }}"
@@ -16,15 +15,11 @@
         controller_password: "{{ current_aap.password }}"
         controller_validate_certs: "{{ current_aap.validate_certs }}"
 
-        # Native module flags
         aap_configuration_use_awx_collection: false
         infra_aap_configuration_use_awx_collection: false
 
-        # Disable async polling
         controller_configuration_async_timeout: 0
         aap_configuration_async_timeout: 0
-        aap_configuration_async_delay: 0
-        aap_configuration_async_dir: "/tmp/.ansible_async"
 
         aap_configuration_dispatcher_roles:
           - role: controller_organizations
@@ -39,6 +34,12 @@
           - role: controller_inventories
             var: controller_inventories
             tags: inventories
+          - role: controller_hosts
+            var: controller_hosts
+            tags: hosts
+          - role: controller_groups
+            var: controller_groups
+            tags: groups
           - role: controller_job_templates
             var: controller_templates
             tags: job_templates

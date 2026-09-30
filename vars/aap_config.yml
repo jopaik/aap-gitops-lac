@@ -19,6 +19,15 @@ controller_organizations:
   - name: "Default"
     description: "Primary Enterprise Organization"
 
+controller_credentials:
+  - name: "Production SSH Key"
+    description: "Machine Password Credential"
+    credential_type: "Machine"
+    organization: "Default"
+    inputs:
+      username: "ansible"
+      password: "{{ vault_aap_gateway_a_password }}"
+
 controller_projects:
   - name: "GitOps Application Configs"
     description: "Managed via GitOps IaC Pipeline"
@@ -33,24 +42,36 @@ controller_inventories:
   - name: "Multi-DC Production Inventory"
     description: "Production Inventory spanning DC1 and DC2"
     organization: "Default"
+
+controller_hosts:
+  - name: "dc1_host_1"
+    inventory: "Multi-DC Production Inventory"
+    variables:
+      ansible_host: "127.0.0.1"
+  - name: "dc1_host_2"
+    inventory: "Multi-DC Production Inventory"
+    variables:
+      ansible_host: "127.0.0.1"
+  - name: "dc2_host_3"
+    inventory: "Multi-DC Production Inventory"
+    variables:
+      ansible_host: "127.0.0.1"
+  - name: "dc2_host_4"
+    inventory: "Multi-DC Production Inventory"
+    variables:
+      ansible_host: "127.0.0.1"
+
+controller_groups:
+  - name: "dc1"
+    inventory: "Multi-DC Production Inventory"
     hosts:
-      dc1_host_1:
-        ansible_host: "127.0.0.1"
-      dc1_host_2:
-        ansible_host: "127.0.0.1"
-      dc2_host_3:
-        ansible_host: "127.0.0.1"
-      dc2_host_4:
-        ansible_host: "127.0.0.1"
-    groups:
-      dc1:
-        hosts:
-          - dc1_host_1
-          - dc1_host_2
-      dc2:
-        hosts:
-          - dc2_host_3
-          - dc2_host_4
+      - "dc1_host_1"
+      - "dc1_host_2"
+  - name: "dc2"
+    inventory: "Multi-DC Production Inventory"
+    hosts:
+      - "dc2_host_3"
+      - "dc2_host_4"
 
 controller_templates:
   - name: "Deploy Workload Job"
