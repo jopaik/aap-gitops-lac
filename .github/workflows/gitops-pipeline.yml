@@ -32,14 +32,21 @@ jobs:
           pip install ansible-core
           ansible-galaxy collection install -r collections/requirements.yml
 
+      - name: Create Vault Password File
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+          chmod 600 .vault_pass
+
       - name: Sync Infrastructure Configurations (AAP 2.6 IaC)
         if: ${{ github.event_name == 'push' || inputs.action == 'sync_and_dispatch' || inputs.action == 'sync_only' }}
-        env:
-          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
         run: |
-          ansible-playbook playbooks/configure_aap.yml
+          ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass
 
       - name: Round-Robin Health Check and Job Launch
         if: ${{ github.event_name == 'push' || inputs.action == 'sync_and_dispatch' || inputs.action == 'dispatch_only' }}
         run: |
-          ansible-playbook playbooks/dispatch_round_robin.yml
+          ansible-playbook playbooks/dispatch_round_robin.yml --vault-password-file .vault_pass
+
+      - name: Clean up Vault Password File
+        if: always()
+        run: rm -f .vault_pass
