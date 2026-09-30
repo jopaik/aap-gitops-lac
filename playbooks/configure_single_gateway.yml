@@ -1,18 +1,28 @@
 ---
-- name: "Configure AAP Gateway Node: {{ current_aap.name }}"
-  block:
-    - name: Set Gateway Endpoint Facts
-      ansible.builtin.set_fact:
-        aap_hostname: "{{ current_aap.host }}"
-        aap_username: "{{ current_aap.username }}"
-        aap_password: "{{ current_aap.password }}"
-        aap_validate_certs: "{{ current_aap.validate_certs }}"
+- name: "Configure AAP Platform Node: {{ current_aap.name }}"
+  vars:
+    controller_hostname: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username }}"
+    controller_password: "{{ current_aap.password }}"
+    controller_validate_certs: "{{ current_aap.validate_certs }}"
 
-    - name: Dispatch Configurations via infra.aap_configuration
+  block:
+    - name: Configure Organizations
       ansible.builtin.include_role:
-        name: infra.aap_configuration.dispatch
-      vars:
-        controller_hostname: "{{ aap_hostname }}"
-        controller_username: "{{ aap_username }}"
-        controller_password: "{{ aap_password }}"
-        controller_validate_certs: "{{ aap_validate_certs }}"
+        name: infra.aap_configuration.organizations
+
+    - name: Configure Credentials
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.credentials
+
+    - name: Configure Projects
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.projects
+
+    - name: Configure Inventories
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.inventories
+
+    - name: Configure Job Templates
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.job_templates
