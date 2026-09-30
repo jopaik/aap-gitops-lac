@@ -5,23 +5,24 @@
       ansible.builtin.include_role:
         name: infra.aap_configuration.dispatch
       vars:
-        aap_configuration_dispatcher_roles:
-          - role: organizations
+        controller_configuration_dispatcher_roles:
+          - role: gateway_organizations
             var: controller_organizations
             tags: organizations
-          - role: credentials
+          - role: controller_credentials
             var: controller_credentials
             tags: credentials
-          - role: projects
+          - role: controller_projects
             var: controller_projects
             tags: projects
-          - role: inventories
+          - role: controller_inventories
             var: controller_inventories
             tags: inventories
-          - role: job_templates
+          - role: controller_job_templates
             var: controller_templates
             tags: job_templates
 
+        # Connection credentials passed to the dispatched roles
         controller_hostname: "{{ current_aap.host }}"
         controller_username: "{{ current_aap.username }}"
         controller_password: "{{ current_aap.password }}"
