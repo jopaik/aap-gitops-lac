@@ -2,12 +2,12 @@
 # Dual AAP 2.6 Gateway Platform Endpoints
 aap_instances:
   - name: "AAP-Platform-Alpha"
-    host: "https://aap-gateway-a.example.com"
+    host: "{{ vault_aap_gateway_a_url }}"
     username: "admin"
     password: "{{ vault_aap_gateway_a_password }}"
     validate_certs: false
   - name: "AAP-Platform-Beta"
-    host: "https://aap-gateway-b.example.com"
+    host: "{{ vault_aap_gateway_b_url }}"
     username: "admin"
     password: "{{ vault_aap_gateway_b_password }}"
     validate_certs: false
