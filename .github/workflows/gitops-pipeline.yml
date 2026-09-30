@@ -23,6 +23,17 @@ jobs:
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
           chmod 600 .vault_pass
 
+      - name: Verify or Load Ansible Collections in GitOps Engine
+        run: |
+                echo "Checking installed collections inside container..."
+                ansible-galaxy collection list
+                
+                # Install from requirements.yml if any collection is missing
+                if [ -f "collections/requirements.yml" ]; then
+                  echo "Ensuring collections from requirements.yml are present..."
+                  ansible-galaxy collection install -r collections/requirements.yml --force-with-deps
+                fi
+
       - name: Apply AAP Infrastructure Configurations
         run: |
           ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass

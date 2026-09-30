@@ -1,15 +1,15 @@
 ---
 - name: "Configure AAP Platform Node: {{ current_aap.name }}"
   block:
-    - name: Apply AAP Platform Infrastructure Configurations
+    - name: Apply AAP Infrastructure Configurations via infra.aap_configuration
       ansible.builtin.include_role:
-        name: ansible.platform.dispatch
+        name: infra.aap_configuration.dispatch
       vars:
-        # Enforce native Red Hat collection dispatching
+        # Disable open-source AWX fallback (uses native ansible.controller)
         aap_configuration_use_awx_collection: false
         infra_aap_configuration_use_awx_collection: false
 
-        # Dispatcher role matrix targeting ansible.platform sub-roles
+        # Dispatcher role matrix targeting infra.aap_configuration sub-roles
         aap_configuration_dispatcher_roles:
           - role: controller_organizations
             var: controller_organizations
