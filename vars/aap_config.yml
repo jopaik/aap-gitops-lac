@@ -26,7 +26,7 @@ controller_credentials:
     organization: "Default"
     inputs:
       username: "ansible"
-      password: "{{ vault_aap_gateway_a_password }}"
+      password: "{{ machine_password }}"
 
 controller_projects:
   - name: "GitOps Application Configs"
