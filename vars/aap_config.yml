@@ -1,21 +1,8 @@
 ---
-# Force infra.aap_configuration to route module calls to awx.awx.*
+# Redirection flags for infra.aap_configuration
 aap_configuration_use_awx_collection: true
 infra_aap_configuration_use_awx_collection: true
 controller_configuration_use_awx_collection: true
-
-# Dual AAP Gateway Platform Endpoints
-aap_instances:
-  - name: "AAP-Platform-Alpha"
-    host: "{{ vault_aap_gateway_a_url }}"
-    username: "admin"
-    password: "{{ vault_aap_gateway_a_password }}"
-    validate_certs: false
-  - name: "AAP-Platform-Beta"
-    host: "{{ vault_aap_gateway_b_url }}"
-    username: "admin"
-    password: "{{ vault_aap_gateway_b_password }}"
-    validate_certs: false
 
 # Declarative AAP Configuration Data
 controller_organizations:
@@ -38,6 +25,7 @@ controller_projects:
     scm_url: "https://github.com/jopaik/aap-gitops-lac.git"
     scm_branch: "main"
     organization: "Default"
+    wait: false # Prevents pipeline timeouts while cloning git repos
 
 controller_inventories:
   - name: "Multi-DC Production Inventory"
@@ -62,9 +50,10 @@ controller_inventories:
           - dc2_host_3
           - dc2_host_4
 
-# Job Templates without credentials attached
+# Use controller_templates for infra.aap_configuration
 controller_templates:
   - name: "Deploy Workload Job"
     project: "GitOps Application Configs"
     playbook: "playbooks/demorun.yml"
     inventory: "Multi-DC Production Inventory"
+    job_type: "run"
