@@ -1,6 +1,8 @@
 ---
-# Force infra.aap_configuration to use awx.awx modules instead of ansible.controller
+# Force infra.aap_configuration to route module calls to awx.awx.*
+aap_configuration_use_awx_collection: true
 infra_aap_configuration_use_awx_collection: true
+controller_configuration_use_awx_collection: true
 
 # Dual AAP Gateway Platform Endpoints
 aap_instances:
@@ -60,6 +62,7 @@ controller_inventories:
           - dc2_host_3
           - dc2_host_4
 
+# Job Templates without credentials attached
 controller_templates:
   - name: "Deploy Workload Job"
     project: "GitOps Application Configs"
