@@ -6,7 +6,7 @@
         name: infra.aap_configuration.dispatch
       vars:
         controller_configuration_dispatcher_roles:
-          - role: gateway_organizations
+          - role: controller_organizations
             var: controller_organizations
             tags: organizations
           - role: controller_credentials
@@ -22,7 +22,6 @@
             var: controller_templates
             tags: job_templates
 
-        # Connection credentials passed to the dispatched roles
         controller_hostname: "{{ current_aap.host }}"
         controller_username: "{{ current_aap.username }}"
         controller_password: "{{ current_aap.password }}"
