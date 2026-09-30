@@ -63,4 +63,3 @@ aap_job_templates:
     playbook: "playbooks/demorun.yml"
     inventory: "Multi-DC Production Inventory"
     credentials:
-      - "Production SSH Key"
