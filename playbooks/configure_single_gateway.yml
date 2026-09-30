@@ -5,9 +5,15 @@
       ansible.builtin.include_role:
         name: infra.aap_configuration.dispatch
       vars:
-        # Disable open-source AWX fallback (uses native ansible.controller)
+        # Enforce native Red Hat collection
         aap_configuration_use_awx_collection: false
         infra_aap_configuration_use_awx_collection: false
+
+        # Completely disable async polling across all roles
+        controller_configuration_async_timeout: 0
+        aap_configuration_async_timeout: 0
+        aap_configuration_async_delay: 0
+        aap_configuration_async_dir: "/tmp/.ansible_async"
 
         # Dispatcher role matrix targeting infra.aap_configuration sub-roles
         aap_configuration_dispatcher_roles:
@@ -29,7 +35,7 @@
 
         controller_configuration_dispatcher_roles: "{{ aap_configuration_dispatcher_roles }}"
 
-        # Gateway Connection Parameters
+        # Connection Credentials
         controller_hostname: "{{ current_aap.host }}"
         controller_username: "{{ current_aap.username }}"
         controller_password: "{{ current_aap.password }}"
