@@ -5,10 +5,24 @@
       ansible.builtin.include_role:
         name: infra.aap_configuration.dispatch
       vars:
-        # infra.aap_configuration dispatch options
+        # Schema requires dict objects with role, var, and tags attributes
         aap_configuration_dispatcher_roles:
-          - controller
-        
+          - role: controller_config
+            var: controller_organizations
+            tags: organizations
+          - role: controller_config
+            var: controller_credentials
+            tags: credentials
+          - role: controller_config
+            var: controller_projects
+            tags: projects
+          - role: controller_config
+            var: controller_inventories
+            tags: inventories
+          - role: controller_config
+            var: controller_templates
+            tags: job_templates
+
         # Connection parameters
         controller_hostname: "{{ current_aap.host }}"
         controller_username: "{{ current_aap.username }}"
