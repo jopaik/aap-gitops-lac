@@ -24,12 +24,6 @@ jobs:
       - name: Install Ansible & Collections
         run: |
           pip install ansible-core
-          
-          # Extract vaulted token value
-          HUB_TOKEN=$(ansible-vault view vars/vault.yml --vault-password-file .vault_pass | grep vault_automation_hub_token | awk '{print $2}')
-          
-          # Pass token directly to ansible-galaxy CLI
-          ansible-galaxy collection install ansible.platform --server https://console.redhat.com/api/automation-hub/content/published/ --token "$HUB_TOKEN"
           ansible-galaxy collection install -r collections/requirements.yml --force
 
 
