@@ -34,7 +34,7 @@ controller_projects:
     scm_type: "git"
     scm_url: "https://github.com/jopaik/aap-gitops-lac.git"
     scm_branch: "main"
-    scm_update_on_launch: true
+    scm_update_on_launch: false
     organization: "Default"
     wait: true
 
