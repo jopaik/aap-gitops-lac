@@ -1,21 +1,31 @@
 ---
 - name: "Configure AAP Platform Node: {{ current_aap.name }}"
   block:
-    - name: Apply AAP Infrastructure Configurations via infra.aap_configuration
+    - name: Apply AAP Infrastructure Configurations via Dispatch
       ansible.builtin.include_role:
         name: infra.aap_configuration.dispatch
       vars:
-        # Enforce native Red Hat collection
+        # Host endpoint mappings for dispatch engine
+        aap_hostname: "{{ current_aap.host }}"
+        aap_username: "{{ current_aap.username }}"
+        aap_password: "{{ current_aap.password }}"
+        aap_validate_certs: "{{ current_aap.validate_certs }}"
+
+        controller_hostname: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        controller_validate_certs: "{{ current_aap.validate_certs }}"
+
+        # Native module flags
         aap_configuration_use_awx_collection: false
         infra_aap_configuration_use_awx_collection: false
 
-        # Completely disable async polling across all roles
+        # Disable async polling
         controller_configuration_async_timeout: 0
         aap_configuration_async_timeout: 0
         aap_configuration_async_delay: 0
         aap_configuration_async_dir: "/tmp/.ansible_async"
 
-        # Dispatcher role matrix targeting infra.aap_configuration sub-roles
         aap_configuration_dispatcher_roles:
           - role: controller_organizations
             var: controller_organizations
@@ -34,9 +44,3 @@
             tags: job_templates
 
         controller_configuration_dispatcher_roles: "{{ aap_configuration_dispatcher_roles }}"
-
-        # Connection Credentials
-        controller_hostname: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        controller_validate_certs: "{{ current_aap.validate_certs }}"
