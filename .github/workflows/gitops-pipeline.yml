@@ -9,7 +9,7 @@ jobs:
   gitops-execution:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/jopaik/aa-runner:jp
+      image: quay.io/jopaik/aap-runner:jp
       credentials:
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_PASSWORD }}
