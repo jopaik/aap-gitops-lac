@@ -26,6 +26,8 @@ jobs:
       - name: Apply AAP Infrastructure Configurations
         run: |
           ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass
+        env:
+          ANSIBLE_NO_LOG: "False"
 
       - name: Round-Robin Job Dispatch
         run: |

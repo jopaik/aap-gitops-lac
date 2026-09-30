@@ -1,44 +1,52 @@
 ---
 - name: "Configure AAP Platform Node: {{ current_aap.name }}"
+  vars:
+    controller_hostname: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username }}"
+    controller_password: "{{ current_aap.password }}"
+    controller_validate_certs: "{{ current_aap.validate_certs }}"
+
+    # Force native Red Hat collection
+    aap_configuration_use_awx_collection: false
+    infra_aap_configuration_use_awx_collection: false
+
+    # Explicitly force synchronous mode per sub-role
+    controller_configuration_async_timeout: 0
+    aap_configuration_async_timeout: 0
+    controller_configuration_async_delay: 0
+    aap_configuration_async_delay: 0
+
   block:
-    - name: Apply AAP Infrastructure Configurations via Dispatch
+    - name: Configure Controller Organizations
       ansible.builtin.include_role:
-        name: infra.aap_configuration.dispatch
+        name: infra.aap_configuration.controller_organizations
+      when: controller_organizations is defined
+
+    - name: Configure Controller Credentials
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.controller_credentials
       vars:
-        aap_hostname: "{{ current_aap.host }}"
-        aap_username: "{{ current_aap.username }}"
-        aap_password: "{{ current_aap.password }}"
-        aap_validate_certs: "{{ current_aap.validate_certs }}"
-
-        controller_hostname: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        controller_validate_certs: "{{ current_aap.validate_certs }}"
-
-        aap_configuration_use_awx_collection: false
-        infra_aap_configuration_use_awx_collection: false
-
+        # Force synchronous execution for credential creation
         controller_configuration_async_timeout: 0
         aap_configuration_async_timeout: 0
+      when: controller_credentials is defined
 
-        aap_configuration_dispatcher_roles:
-          - role: controller_organizations
-            var: controller_organizations
-            tags: organizations
-          - role: controller_credentials
-            var: controller_credentials
-            tags: credentials
-          - role: controller_projects
-            var: controller_projects
-            tags: projects
-          - role: controller_inventories
-            var: controller_inventories
-            tags: inventories
-          - role: controller_hosts
-            var: controller_hosts
-            tags: hosts
-          - role: controller_job_templates
-            var: controller_templates
-            tags: job_templates
+    - name: Configure Controller Projects
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.controller_projects
+      when: controller_projects is defined
 
-        controller_configuration_dispatcher_roles: "{{ aap_configuration_dispatcher_roles }}"
+    - name: Configure Controller Inventories
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.controller_inventories
+      when: controller_inventories is defined
+
+    - name: Configure Controller Hosts
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.controller_hosts
+      when: controller_hosts is defined
+
+    - name: Configure Controller Job Templates
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.controller_job_templates
+      when: controller_templates is defined
