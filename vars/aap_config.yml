@@ -1,10 +1,8 @@
 ---
-# Redirection Flags (Disabled for native Red Hat ansible.platform usage)
 aap_configuration_use_awx_collection: false
 infra_aap_configuration_use_awx_collection: false
 controller_configuration_use_awx_collection: false
 
-# Dual AAP Gateway Platform Endpoints
 aap_instances:
   - name: "AAP-Platform-Alpha"
     host: "{{ vault_aap_gateway_a_url }}"
@@ -17,10 +15,18 @@ aap_instances:
     password: "{{ vault_aap_gateway_b_password }}"
     validate_certs: false
 
-# Declarative Controller Data
 controller_organizations:
   - name: "Default"
     description: "Primary Enterprise Organization"
+
+controller_credentials:
+  - name: "Production SSH Key"
+    description: "Machine SSH Credential"
+    credential_type: "Machine"
+    organization: "Default"
+    inputs:
+      username: "ansible"
+      ssh_key_data: "{{ vault_ssh_private_key }}"
 
 controller_projects:
   - name: "GitOps Application Configs"
@@ -28,8 +34,9 @@ controller_projects:
     scm_type: "git"
     scm_url: "https://github.com/jopaik/aap-gitops-lac.git"
     scm_branch: "main"
+    scm_update_on_launch: true
     organization: "Default"
-    wait: false  # Prevents API timeouts during SCM git clones
+    wait: true
 
 controller_inventories:
   - name: "Multi-DC Production Inventory"
@@ -57,6 +64,6 @@ controller_inventories:
 controller_templates:
   - name: "Deploy Workload Job"
     project: "GitOps Application Configs"
-    playbook: "demorun.yml"
+    playbook: "playbooks/demorun.yml"
     inventory: "Multi-DC Production Inventory"
     job_type: "run"
