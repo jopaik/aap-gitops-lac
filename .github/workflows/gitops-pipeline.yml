@@ -17,16 +17,22 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Ansible & Collections
-        run: |
-          pip install ansible-core
-          ansible-galaxy collection install awx.awx --force
-          ansible-galaxy collection install -r collections/requirements.yml --force
-
       - name: Create Vault Password File
         run: |
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
           chmod 600 .vault_pass
+      - name: Install Ansible & Collections
+        run: |
+          pip install ansible-core
+          
+          # Extract vaulted token value
+          HUB_TOKEN=$(ansible-vault view vars/vault.yml --vault-password-file .vault_pass | grep vault_automation_hub_token | awk '{print $2}')
+          
+          # Pass token directly to ansible-galaxy CLI
+          ansible-galaxy collection install ansible.platform --server https://console.redhat.com/api/automation-hub/content/published/ --token "$HUB_TOKEN"
+          ansible-galaxy collection install -r collections/requirements.yml --force
+
+
 
       - name: Apply AAP Infrastructure Configurations
         run: |
