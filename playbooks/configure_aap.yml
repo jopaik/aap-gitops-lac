@@ -1,10 +1,11 @@
 ---
 - name: Configure AAP 2.6 Platforms via Gateway
   hosts: localhost
+  connection: local
   gather_facts: false
   vars_files:
-    - ../vars/aap_config.yml
-    - ../vars/vault.yml
+    - "../vars/aap_config.yml"
+    - "../vars/vault.yml"
 
   tasks:
     - name: Apply IaC Configuration to Each AAP Cluster

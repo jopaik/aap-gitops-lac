@@ -1,34 +1,36 @@
 ---
 - name: "Configure AAP Platform Node: {{ current_aap.name }}"
-  vars:
-    controller_hostname: "{{ current_aap.host }}"
-    controller_username: "{{ current_aap.username }}"
-    controller_password: "{{ current_aap.password }}"
-    controller_validate_certs: "{{ current_aap.validate_certs }}"
-    request_timeout: 15
-
   block:
-    - name: Configure Organizations
+    - name: Apply AAP Platform Infrastructure Configurations
       ansible.builtin.include_role:
-        name: awx.awx.organizations
-      when: controller_organizations is defined
+        name: ansible.platform.dispatch
+      vars:
+        # Enforce native Red Hat collection dispatching
+        aap_configuration_use_awx_collection: false
+        infra_aap_configuration_use_awx_collection: false
 
-    - name: Configure Credentials
-      ansible.builtin.include_role:
-        name: awx.awx.credentials
-      when: controller_credentials is defined
+        # Dispatcher role matrix targeting ansible.platform sub-roles
+        aap_configuration_dispatcher_roles:
+          - role: controller_organizations
+            var: controller_organizations
+            tags: organizations
+          - role: controller_credentials
+            var: controller_credentials
+            tags: credentials
+          - role: controller_projects
+            var: controller_projects
+            tags: projects
+          - role: controller_inventories
+            var: controller_inventories
+            tags: inventories
+          - role: controller_job_templates
+            var: controller_templates
+            tags: job_templates
 
-    - name: Configure Projects
-      ansible.builtin.include_role:
-        name: awx.awx.projects
-      when: controller_projects is defined
+        controller_configuration_dispatcher_roles: "{{ aap_configuration_dispatcher_roles }}"
 
-    - name: Configure Inventories
-      ansible.builtin.include_role:
-        name: awx.awx.inventories
-      when: controller_inventories is defined
-
-    - name: Configure Job Templates
-      ansible.builtin.include_role:
-        name: awx.awx.job_templates
-      when: controller_templates is defined
+        # Gateway Connection Parameters
+        controller_hostname: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        controller_validate_certs: "{{ current_aap.validate_certs }}"
