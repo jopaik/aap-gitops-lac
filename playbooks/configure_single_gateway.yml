@@ -6,11 +6,10 @@
     controller_password: "{{ current_aap.password }}"
     controller_validate_certs: "{{ current_aap.validate_certs }}"
 
-    # Force native Red Hat collection
     aap_configuration_use_awx_collection: false
     infra_aap_configuration_use_awx_collection: false
 
-    # Explicitly force synchronous mode per sub-role
+    # Force zero delay to eliminate async tracking
     controller_configuration_async_timeout: 0
     aap_configuration_async_timeout: 0
     controller_configuration_async_delay: 0
@@ -22,14 +21,21 @@
         name: infra.aap_configuration.controller_organizations
       when: controller_organizations is defined
 
-    - name: Configure Controller Credentials
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.controller_credentials
-      vars:
-        # Force synchronous execution for credential creation
-        controller_configuration_async_timeout: 0
-        aap_configuration_async_timeout: 0
+    - name: Configure Controller Credentials (Native Direct)
+      ansible.controller.credential:
+        name: "{{ item.name }}"
+        description: "{{ item.description | default(omit) }}"
+        credential_type: "{{ item.credential_type }}"
+        organization: "{{ item.organization }}"
+        inputs: "{{ item.inputs }}"
+        state: present
+        controller_host: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        validate_certs: "{{ current_aap.validate_certs }}"
+      loop: "{{ controller_credentials }}"
       when: controller_credentials is defined
+      no_log: false  # Explicitly unhide payload output for debugging
 
     - name: Configure Controller Projects
       ansible.builtin.include_role:

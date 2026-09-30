@@ -70,7 +70,6 @@ controller_hosts:
     variables:
       ansible_host: "127.0.0.1"
 
-
 controller_templates:
   - name: "Deploy Workload Job"
     project: "GitOps Application Configs"
