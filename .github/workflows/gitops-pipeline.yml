@@ -42,6 +42,9 @@ jobs:
           chmod 600 .vault_pass
 
       - name: Sync Infrastructure Configurations (AAP 2.6 IaC)
+        env:
+          ANSIBLE_STDOUT_CALLBACK: default
+          ANSIBLE_RESULT_FORMAT: yaml
         if: ${{ github.event_name == 'push' || inputs.action == 'sync_and_dispatch' || inputs.action == 'sync_only' }}
         run: |
           ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass
