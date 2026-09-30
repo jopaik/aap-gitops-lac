@@ -1,28 +1,11 @@
 ---
 - name: "Configure AAP Platform Node: {{ current_aap.name }}"
-  vars:
-    controller_hostname: "{{ current_aap.host }}"
-    controller_username: "{{ current_aap.username }}"
-    controller_password: "{{ current_aap.password }}"
-    controller_validate_certs: "{{ current_aap.validate_certs }}"
-
   block:
-    - name: Configure Organizations
+    - name: Apply Controller Configuration
       ansible.builtin.include_role:
-        name: infra.aap_configuration.organizations
-
-    - name: Configure Credentials
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.credentials
-
-    - name: Configure Projects
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.projects
-
-    - name: Configure Inventories
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.inventories
-
-    - name: Configure Job Templates
-      ansible.builtin.include_role:
-        name: infra.aap_configuration.job_templates
+        name: infra.aap_configuration.controller_config
+      vars:
+        controller_hostname: "{{ current_aap.host }}"
+        controller_username: "{{ current_aap.username }}"
+        controller_password: "{{ current_aap.password }}"
+        controller_validate_certs: "{{ current_aap.validate_certs }}"
