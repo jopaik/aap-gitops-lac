@@ -57,6 +57,6 @@ controller_inventories:
 controller_templates:
   - name: "Deploy Workload Job"
     project: "GitOps Application Configs"
-    playbook: "playbooks/demorun.yml"
+    playbook: "demorun.yml"
     inventory: "Multi-DC Production Inventory"
     job_type: "run"
