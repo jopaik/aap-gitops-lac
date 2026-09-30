@@ -1,0 +1,14 @@
+---
+# Gateway A Details
+vault_aap_gateway_a_url: "https://aap-gateway-a.example.com"
+vault_aap_gateway_a_password: "SuperSecretAdminPassword1!"
+
+# Gateway B Details
+vault_aap_gateway_b_url: "https://aap-gateway-b.example.com"
+vault_aap_gateway_b_password: "SuperSecretAdminPassword2!"
+
+# SSH Credentials
+vault_ssh_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  b3BlbnNzaC1rZXktdjEAAAABG5vbmUAAAA...
+  -----END OPENSSH PRIVATE KEY-----

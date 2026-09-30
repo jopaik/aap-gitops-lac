@@ -4,6 +4,7 @@
   gather_facts: false
   vars_files:
     - ../vars/aap_config.yml
+    - ../vars/vault.yml
   vars:
     target_job_template: "Deploy Workload Job"
     state_file: "/tmp/aap_rr_state.txt"

@@ -4,6 +4,7 @@
   gather_facts: false
   vars_files:
     - ../vars/aap_config.yml
+    - ../vars/vault.yml
 
   tasks:
     - name: Apply IaC Configuration to Each AAP Cluster
