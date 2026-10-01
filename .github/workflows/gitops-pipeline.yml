@@ -23,15 +23,15 @@ jobs:
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
           chmod 600 .vault_pass
 
-      # - name: Apply AAP Infrastructure Configurations
-      #   run: |
-      #     ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass
-      #   env:
-      #     ANSIBLE_NO_LOG: "False"
-
-      - name: Round-Robin Job Dispatch
+      - name: Apply AAP Infrastructure Configurations
         run: |
-          ansible-playbook playbooks/dispatch_round_robin.yml --vault-password-file .vault_pass
+          ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass
+        env:
+          ANSIBLE_NO_LOG: "False"
+
+      # - name: Round-Robin Job Dispatch
+      #   run: |
+      #     ansible-playbook playbooks/dispatch_round_robin.yml --vault-password-file .vault_pass
 
       - name: Clean up Vault Password File
         if: always()
