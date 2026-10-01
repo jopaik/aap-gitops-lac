@@ -45,7 +45,7 @@ A production-grade GitOps repository designed to declaratively configure Red Hat
 
 # 📁 Repository Structure & Workflow Guide
 
-This document outlines the repository layout and execution workflow for the multi-cluster Red Hat Ansible Automation Platform (AAP) 2.6 GitOps pipeline.
+This document outlines the repository layout and execution workflow for the multi-cluster Red Hat Ansible Automation Platform (AAP) GitOps pipeline.
 
 ---
 
