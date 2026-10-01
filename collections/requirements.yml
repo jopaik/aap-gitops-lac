@@ -1,5 +1,2 @@
----
-collections:
-  - name: infra.aap_configuration
-    version: ">=3.0.0"
+
 
