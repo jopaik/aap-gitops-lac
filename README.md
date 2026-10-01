@@ -32,7 +32,7 @@ A production-grade GitOps repository designed to declaratively configure Red Hat
            v                                                      v
 +----------------------------------+                   +----------------------------------+
 |       AAP PLATFORM ALPHA         |                   |        AAP PLATFORM BETA         |
-|  [https://control-nkdv8.apps](https://control-nkdv8.apps)...   |                   |  [https://control-6c7mh.apps](https://control-6c7mh.apps)...   |
+|     |
 |                                  |                   |                                  |
 |  • Org: Default                  |                   |  • Org: Default                  |
 |  • Credential: Production Key    |                   |  • Credential: Production Key    |
