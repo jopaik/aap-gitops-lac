@@ -126,11 +126,12 @@ and **`deploy`** (Workload Dispatch).
 
 ## 🔮 Roadmap & Future Enhancements
 
-### 🛡️️ Reliability & Health
+### 🛡 Reliability & Health
 * [ ] **Pre-Flight Cluster Health Checks**: Add validation tasks to query gateway API endpoints before triggering IaC changes or workload runs.
 
 ### ⚙️ Automation & Lifecycle Management
 * [ ] **Dynamic Project & Job Template Lifecycle**: Refine playbooks to conditionally update or create missing controller resources without manual intervention.
+* [ ] **Dynamic Job Templates & Execution Limits**: Implement flexible template execution parameters—such as runtime limits, extra vars overrides, and dynamic template selection—to allow finer workload control during dispatch.
 
 ### 📍 Multi-DC & Location Intelligence
 * [ ] **Geographic & Location-Aware Inventories**: Implement smart inventory mapping based on cluster region (`dc1`, `dc2`) to route jobs to location-specific execution nodes.
