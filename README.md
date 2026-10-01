@@ -45,7 +45,8 @@ A friendly, production-grade GitOps pipeline for Active-Active multi-cluster AAP
 
 # 📁 Repository Structure & Workflow Guide
 
-This document outlines the repository layout and execution workflow for the multi-cluster Red Hat Ansible Automation Platform (AAP) GitOps pipeline.
+This document outlines the repository layout and execution workflow for 
+the active-active multi-cluster Red Hat Ansible Automation Platform (AAP) GitOps pipeline.
 
 ---
 
