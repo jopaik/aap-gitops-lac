@@ -1,12 +1,12 @@
-name: AAP 2.6 GitOps Pipeline
+name: AAP 2.6 Workload Dispatch (Deploy Branch)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "deploy" ]
   workflow_dispatch:
 
 jobs:
-  gitops-execution:
+  dispatch-round-robin:
     runs-on: ubuntu-latest
     container:
       image: quay.io/jopaik/aap-runner:jp1
@@ -23,12 +23,12 @@ jobs:
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
           chmod 600 .vault_pass
 
-      - name: Apply AAP Infrastructure Configurations
+      - name: Round-Robin Job Dispatch
         run: |
-          ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass
+          ansible-playbook playbooks/dispatch_round_robin.yml --vault-password-file .vault_pass
         env:
           ANSIBLE_NO_LOG: "False"
-
+          
       - name: Clean up Vault Password File
         if: always()
         run: rm -f .vault_pass
