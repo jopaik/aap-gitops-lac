@@ -1,6 +1,6 @@
-# AAP 2.6 Multi-Cluster GitOps Pipeline
+# AAP Multi-Cluster GitOps Pipeline
 
-A production-grade GitOps repository designed to declaratively configure Red Hat Ansible Automation Platform (AAP) 2.6 gateway clusters on the `main` branch and dispatch workload jobs on the `deploy` branch using GitHub Actions and native `ansible.controller` modules.
+A production-grade GitOps repository designed to declaratively configure Red Hat Ansible Automation Platform (AAP) gateway clusters on the `main` branch and dispatch workload jobs on the `deploy` branch using GitHub Actions and native `ansible.controller` modules.
 
 ---
 
