@@ -22,7 +22,7 @@
 
     - name: Launch Workload Job Template
       ansible.controller.job_launch:
-        job_template: "Deploy Workload Job 2"
+        job_template: "Deploy Workload Job"
         controller_host: "{{ selected_aap.host }}"
         controller_username: "{{ selected_aap.username }}"
         controller_password: "{{ selected_aap.password }}"
