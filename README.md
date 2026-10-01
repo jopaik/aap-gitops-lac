@@ -1,6 +1,6 @@
 # AAP 2.6 Multi-Cluster GitOps Pipeline
 
-A production-grade GitOps repository designed to declaratively configure Red Hat Ansible Automation Platform (AAP) 2.6 gateway clusters and dispatch workload jobs using GitHub Actions and native `ansible.controller` modules.
+A production-grade GitOps repository designed to declaratively configure Red Hat Ansible Automation Platform (AAP) 2.6 gateway clusters on the `main` branch and dispatch workload jobs on the `deploy` branch using GitHub Actions and native `ansible.controller` modules.
 
 ---
 
@@ -13,41 +13,50 @@ A production-grade GitOps repository designed to declaratively configure Red Hat
 |   vars/aap_config.yml     playbooks/configure_aap.yml     playbooks/demorun.yml |
 |   vars/vault.yml          playbooks/dispatch_round_robin.yml                    |
 +---------------------------------------------------------------------------------+
-                                       |
-                                       | Git Push to 'main'
-                                       v
-+---------------------------------------------------------------------------------+
-|                           GITHUB ACTIONS WORKFLOW                               |
-|                     Container: quay.io/jopaik/aap-runner:jp1                    |
-|                                                                                 |
-|  1. Generate .vault_pass from ANSIBLE_VAULT_PASSWORD Secret                    |
-|  2. Execute playbooks/configure_aap.yml (IaC Cluster Provisioning)               |
-|  3. Execute playbooks/dispatch_round_robin.yml (Workload Dispatch)              |
-|  4. Clean up .vault_pass                                                        |
-+---------------------------------------------------------------------------------+
-           |                                                      |
-           | Step 2: IaC Provisioning                             | Step 3: Job Launch
-           | Syncs Organizations, Credentials,                    | Dispatches Job Template via
-           | Projects, Inventories, Hosts & Templates             | GITHUB_RUN_NUMBER % 2
-           v                                                      v
-+----------------------------------+                   +----------------------------------+
-|       AAP PLATFORM ALPHA         |                   |        AAP PLATFORM BETA         |
-|     |
-|                                  |                   |                                  |
-|  • Org: Default                  |                   |  • Org: Default                  |
-|  • Credential: Production Key    |                   |  • Credential: Production Key    |
-|  • Project: GitOps Application   |                   |  • Project: GitOps Application   |
-|  • Inventory: Multi-DC           |                   |  • Inventory: Multi-DC           |
-|  • Template: Deploy Workload Job |                   |  • Template: Deploy Workload Job |
-+----------------------------------+                   +----------------------------------+
-                 \                                                     /
-                  \---> [ Executed Job Run on Selected Cluster ] <-----/
+                     /                               \
+    Git Push to 'main'                             Git Push to 'deploy'
+                   /                                   \
+                  v                                     v
++-----------------------------------+   +-----------------------------------+
+|  WORKFLOW: gitops-main.yml        |   |  WORKFLOW: gitops-deploy.yml      |
+|  Container: aap-runner:jp1        |   |  Container: aap-runner:jp1        |
+|                                   |   |                                   |
+|  1. Generate .vault_pass          |   |  1. Generate .vault_pass          |
+|  2. Execute configure_aap.yml     |   |  2. Execute dispatch_round_robin  |
+|  3. Clean up .vault_pass          |   |  3. Clean up .vault_pass          |
++-----------------------------------+   +-----------------------------------+
+                  |                                       |
+                  | Phase 1: IaC                          | Phase 2: Job Launch
+                  | Syncs Orgs, Credentials,              | Dispatches Job Template via
+                  | Projects, Inventories, Templates      | GITHUB_RUN_NUMBER % 2
+                  v                                       v
++----------------------------------+     +----------------------------------+
+|       AAP PLATFORM ALPHA         |     |        AAP PLATFORM BETA         |
+|                                  |.    |                                  |
+|                                  |     |                                  |
+|  • Org: Default                  |     |  • Org: Default                  |
+|  • Credential: Production Key    |     |  • Credential: Production Key    |
+|  • Project: GitOps Application   |     |  • Project: GitOps Application   |
+|  • Inventory: Multi-DC           |     |  • Inventory: Multi-DC           |
+|  • Template: Deploy Workload Job |     |  • Template: Deploy Workload Job |
++----------------------------------+     +----------------------------------+
+                 \                                       /
+                  \---> [ Executed Job Run on Selected Cluster ] <------/
 
+# 📁 Repository Structure & Workflow Guide
 
-                  .
+This document outlines the repository layout and execution workflow for the multi-cluster Red Hat Ansible Automation Platform (AAP) 2.6 GitOps pipeline.
+
+---
+
+## 📁 Repository Structure
+
+```text
+.
 ├── .github/
 │   └── workflows/
-│       └── gitops-pipeline.yml     # GitHub Actions workflow running in Quay execution container
+│       ├── gitops-main.yml         # IaC pipeline triggered on pushes to 'main'
+│       └── gitops-deploy.yml       # Workload dispatch pipeline triggered on pushes to 'deploy'
 ├── playbooks/
 │   ├── configure_aap.yml           # Entrypoint playbook iterating across all Gateway clusters
 │   ├── configure_single_gateway.yml # Direct native ansible.controller module tasks
@@ -57,52 +66,54 @@ A production-grade GitOps repository designed to declaratively configure Red Hat
 │   ├── aap_config.yml              # Declarative IaC variables (Orgs, Credentials, Projects, Inventories, Templates)
 │   └── vault.yml                   # Encrypted secret credentials (Vault URLs, passwords, Machine credentials)
 ├── .vault_pass                     # Transient vault password file (generated and purged during pipeline execution)
-└── README.md                       # Architecture diagram and repository documentation
+└── README.md                       # High-level architecture and pipeline documentation
 
+# 🚀 How It Works
 
-
-# How It Works
-
-The automated GitOps pipeline runs inside the custom container (`quay.io/jopaik/aap-runner:jp1`) and executes in two primary phases on every push or manual workflow dispatch on the `main` branch.
+The automated GitOps pipeline decouples platform infrastructure management from workload execution across two dedicated Git branches: **`main`** (Platform IaC) and **`deploy`** (Workload Dispatch).
 
 ---
 
-## Phase 1: Declarative IaC Infrastructure Provisioning
+## Phase 1: Declarative IaC Infrastructure Provisioning (`main` Branch)
+**Workflow File:** `.github/workflows/gitops-main.yml`  
 **Playbook Entrypoint:** `playbooks/configure_aap.yml` $\rightarrow$ `playbooks/configure_single_gateway.yml`
 
-1. **Vault & Runner Initialization**
-   * The pipeline reads the `ANSIBLE_VAULT_PASSWORD` GitHub secret and generates a temporary `.vault_pass` file (`chmod 600`).
-   * `playbooks/configure_aap.yml` loads declarative definitions from `vars/aap_config.yml` and decrypted secrets from `vars/vault.yml`.
+1. **Trigger & Environment Setup**
+   * Pushing to `main` (or running `workflow_dispatch`) spawns a runner inside `quay.io/jopaik/aap-runner:jp1`.
+   * The pipeline fetches `ANSIBLE_VAULT_PASSWORD` from GitHub Secrets, generates a transient `.vault_pass` file, and applies strict file permissions (`chmod 600`).
 
-2. **Sequential Multi-Cluster Targeted Iteration**
-   * The entrypoint playbook loops over all target gateway nodes in `aap_instances` (**AAP-Platform-Alpha** and **AAP-Platform-Beta**).
+2. **Multi-Cluster Loop**
+   * `playbooks/configure_aap.yml` loads declarative platform settings from `vars/aap_config.yml` and decrypted credentials from `vars/vault.yml`.
+   * It iterates sequentially across all target gateway nodes in `aap_instances` (**AAP-Platform-Alpha** and **AAP-Platform-Beta**).
 
-3. **Direct Native Synchronization**
-   * `playbooks/configure_single_gateway.yml` invokes direct native `ansible.controller` modules synchronously on each cluster to establish state:
-     * **Organizations**: Provisions enterprise management boundaries (e.g., `Default`).
-     * **Credentials**: Configures Machine credentials using vaulted passwords/SSH keys for target hosts.
-     * **Projects**: Syncs the Git repository (`https://github.com/jopaik/aap-gitops-lac.git`) with `wait: true` to ensure SCM repository cloning completes before downstream steps.
-     * **Inventories, Hosts & Groups**: Sets up multi-datacenter inventory groups (`dc1`, `dc2`) and registers individual host endpoints with variables.
-     * **Job Templates**: Links the synchronized Git project and inventory to create launchable execution templates (`Deploy Workload Job` pointing to `playbooks/demorun.yml`).
+3. **Synchronous Native Provisioning**
+   * `playbooks/configure_single_gateway.yml` uses direct native `ansible.controller` modules to establish state on each AAP cluster:
+     * **Organizations**: Sets up enterprise boundaries (e.g., `Default`).
+     * **Credentials**: Provisions Machine credentials using vaulted SSH passwords or private keys.
+     * **Projects**: Synchronizes the Git repository (`https://github.com/jopaik/aap-gitops-lac.git`) tracking the `deploy` branch. Setting `wait: true` enforces synchronous cloning before downstream resource binding.
+     * **Inventories, Hosts & Groups**: Builds multi-datacenter inventory groups (`dc1`, `dc2`) and populates host endpoints with host variables.
+     * **Job Templates**: Binds the synchronized Git project and inventory to launchable template definitions (`Deploy Workload Job` pointing to `playbooks/demorun.yml`).
 
 ---
 
-## Phase 2: Dynamic Round-Robin Workload Dispatch
+## Phase 2: Dynamic Round-Robin Workload Dispatch (`deploy` Branch)
+**Workflow File:** `.github/workflows/gitops-deploy.yml`  
 **Playbook Entrypoint:** `playbooks/dispatch_round_robin.yml`
 
-1. **GitHub Pipeline Context Evaluation**
-   * The playbook reads the environment variable `GITHUB_RUN_NUMBER` generated automatically by GitHub Actions (e.g., Run #1, Run #2, Run #3...).
+1. **Trigger & Context Evaluation**
+   * Pushing to `deploy` (or running `workflow_dispatch`) triggers the workload dispatch pipeline.
+   * The job retrieves `GITHUB_RUN_NUMBER` provided automatically by the active GitHub Actions execution context (Run #1, Run #2, Run #3...).
 
-2. **Modulo Cluster Selection**
-   * Target selection is calculated dynamically using modulo arithmetic across the array length of available instances:
+2. **Modulo Target Selection**
+   * Target selection alternates dynamically between clusters using integer modulo arithmetic:
      $$\text{Target Index} = \text{GITHUB\_RUN\_NUMBER} \pmod{\text{length}(\text{aap\_instances})}$$
-   * **Run #1**: `1 % 2 = 1` $\rightarrow$ Targets **AAP-Platform-Beta**
-   * **Run #2**: `2 % 2 = 0` $\rightarrow$ Targets **AAP-Platform-Alpha**
-   * **Run #3**: `3 % 2 = 1` $\rightarrow$ Targets **AAP-Platform-Beta**
+   * **Run #1**: $1 \pmod 2 = 1 \longrightarrow$ Targets **AAP-Platform-Beta**
+   * **Run #2**: $2 \pmod 2 = 0 \longrightarrow$ Targets **AAP-Platform-Alpha**
+   * **Run #3**: $3 \pmod 2 = 1 \longrightarrow$ Targets **AAP-Platform-Beta**
 
-3. **Synchronous Job Launch**
-   * The playbook calls `ansible.controller.job_launch` against the calculated target gateway cluster to execute `Deploy Workload Job`.
-   * It waits (`wait: true`) until job execution finishes on the AAP platform and returns the final job status logs to the GitHub Actions runner.
+3. **Synchronous Execution & Logging**
+   * Calls `ansible.controller.job_launch` against the calculated target cluster to run `Deploy Workload Job`.
+   * Sets `wait: true` to poll execution status until completion and streams output back to the runner logs.
 
 4. **Transient Cleanup**
-   * In a final step guaranteed by `if: always()`, the pipeline deletes `.vault_pass` from the runner context.
+   * A final step enforced by `if: always()` permanently deletes `.vault_pass` from the container workspace.
