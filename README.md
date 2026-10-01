@@ -71,7 +71,9 @@ the active-active multi-cluster Red Hat Ansible Automation Platform (AAP) GitOps
 
 # 🚀 How It Works
 
-The automated GitOps pipeline decouples platform infrastructure management from workload execution across two dedicated Git branches: **`main`** (Platform IaC) and **`deploy`** (Workload Dispatch).
+The automated GitOps pipeline decouples platform infrastructure management 
+from workload execution across two dedicated Git branches: **`main`** (Platform IaC) 
+and **`deploy`** (Workload Dispatch).
 
 ---
 
