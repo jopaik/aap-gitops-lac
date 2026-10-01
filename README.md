@@ -1,6 +1,6 @@
 # Active-Active AAP Multi-Cluster with GitOps Pipeline
 
-A production-grade GitOps repository designed to declaratively configure Red Hat Ansible Automation Platform (AAP) gateway clusters on the `main` branch and dispatch workload jobs on the `deploy` branch using GitHub Actions and native `ansible.controller` modules.
+A friendly, production-grade GitOps pipeline for Active-Active multi-cluster AAP setups! ⚡ Uses GitHub Actions and ansible.controller modules to manage declarative platform configuration on main and handle workload dispatch on deploy.
 
 ---
 
