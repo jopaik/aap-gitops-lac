@@ -1,5 +1,5 @@
 ---
-- name: Configure AAP 2.6 Platforms via Gateway
+- name: Configure AAP Platforms via Gateway
   hosts: localhost
   connection: local
   gather_facts: false
