@@ -4,12 +4,12 @@
 # ==============================================================================
 
 # Target Job Template to launch on the selected cluster
-deploy_job_name: "Deploy Workload Job 2"
+deploy_job_name: "Deploy Workload Job"
 
 # Execution limit to constrain host execution
 # Options: 'dc1', 'dc2', 'production', 'non-production', or hostnames like 'dc1_host_1'
-deploy_job_limit: "dc1"
+deploy_job_limit: "non-production"
 
 # Target AAP cluster selector
 # Options: 'auto' (round-robin via GITHUB_RUN_NUMBER), 'dc1', 'dc2', 'production', 'non-production', 'AAP-Platform-DC1', 'AAP-Platform-DC2'
-target_aap: "production"
+target_aap: "auto"
