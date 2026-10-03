@@ -66,7 +66,6 @@
         controller_host: "{{ selected_cluster.host }}"
         controller_username: "{{ selected_cluster.username | default(omit) }}"
         controller_password: "{{ selected_cluster.password | default(omit) }}"
-        controller_oauthtoken: "{{ selected_cluster.token | default(omit) }}"
         validate_certs: "{{ selected_cluster.validate_certs | default(false) }}"
         job_template: "{{ active_job_name }}"
         limit: "{{ active_job_limit | default(omit) }}"
