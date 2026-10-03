@@ -28,23 +28,16 @@
       loop: "{{ controller_credentials }}"
       when: controller_credentials is defined
 
-    - name: Configure Controller Projects
-      ansible.controller.project:
+    - name: Force SCM Sync on Controller Projects
+      ansible.controller.project_update:
+        controller_host: "{{ gateway_instance.host }}"
+        controller_username: "{{ gateway_instance.username | default(omit) }}"
+        controller_password: "{{ gateway_instance.password | default(omit) }}"
+        controller_oauthtoken: "{{ gateway_instance.token | default(omit) }}"
+        validate_certs: "{{ gateway_instance.validate_certs | default(false) }}"
         name: "{{ item.name }}"
-        description: "{{ item.description | default(omit) }}"
-        scm_type: "{{ item.scm_type }}"
-        scm_url: "{{ item.scm_url }}"
-        scm_branch: "{{ item.scm_branch | default(omit) }}"
-        scm_update_on_launch: "{{ item.scm_update_on_launch | default(omit) }}"
-        organization: "{{ item.organization }}"
-        wait: "{{ item.wait | default(true) }}"
-        state: present
-        controller_host: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        validate_certs: "{{ current_aap.validate_certs }}"
-      loop: "{{ controller_projects }}"
-      when: controller_projects is defined
+        wait: true
+      loop: "{{ controller_projects | default([]) }}"
 
     - name: Configure Controller Inventories
       ansible.controller.inventory:
