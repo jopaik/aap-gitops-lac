@@ -1,0 +1,11 @@
+---
+# Gateway A Details
+vault_aap_gateway_dc1_url: "https://aap-gateway-dc1.example.com"
+vault_aap_gateway_dc1_password: "SuperSecretPassword123!"
+
+# Gateway B Details
+vault_aap_gateway_dc2_url: "https://aap-gateway-dc2.example.com"
+vault_aap_gateway_dc2_password: "SuperSecretPassword123!"
+
+# Machine credentials
+machine_password: "SuperSecretPassword123!"
