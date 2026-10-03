@@ -8,8 +8,8 @@ deploy_job_name: "Deploy Workload Job"
 
 # Execution limit to constrain host execution
 # Options: 'dc1', 'dc2', 'production', 'non-production', or hostnames like 'dc1_host_1'
-deploy_job_limit: "all"
+deploy_job_limit: "dc1"
 
 # Target AAP cluster selector
 # Options: 'auto' (round-robin via GITHUB_RUN_NUMBER), 'dc1', 'dc2', 'production', 'non-production', 'AAP-Platform-DC1', 'AAP-Platform-DC2'
-target_aap: "auto"
+target_aap: "dc1"
