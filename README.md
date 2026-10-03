@@ -1,5 +1,4 @@
 
-```markdown
 # Active-Active AAP Multi-Cluster with GitOps Pipeline
 
 A production-grade GitOps pipeline for Active-Active multi-datacenter Red Hat Ansible Automation Platform (AAP) setups. Uses GitHub Actions and `ansible.controller` modules to manage declarative platform configuration on `main` and handle workload dispatch on `deploy`.
