@@ -73,26 +73,3 @@
         limit: "{{ active_job_limit | default(omit) }}"
         wait: true
       register: job_launch_result
-
-    # --------------------------------------------------------------------------
-    # 4. Diagnostic Output Handling on Failure
-    # --------------------------------------------------------------------------
-    - name: Fetch job execution stdout on failure
-      ansible.controller.job_stdout:
-        controller_host: "{{ selected_cluster.host }}"
-        controller_username: "{{ selected_cluster.username | default(omit) }}"
-        controller_password: "{{ selected_cluster.password | default(omit) }}"
-        validate_certs: "{{ selected_cluster.validate_certs | default(false) }}"
-        id: "{{ job_launch_result.id }}"
-      register: job_stdout_result
-      when: job_launch_result.status == 'failed'
-      ignore_errors: true
-
-    - name: Display AAP Job Execution Output
-      ansible.builtin.debug:
-        var: job_stdout_result.content
-      when: job_launch_result.status == 'failed'
-
-    - name: Print launched job execution status
-      ansible.builtin.debug:
-        msg: "Job '{{ active_job_name }}' (ID: {{ job_launch_result.id }}) finished with status: {{ job_launch_result.status }}"
