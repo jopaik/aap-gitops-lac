@@ -1,8 +1,7 @@
 ---
 # ==============================================================================
 # Workload Dispatch Playbook for AAP Gateway Clusters
-# Dynamically resolves target cluster (Label-based or Round-Robin fallback)
-# Includes Pre-Flight Health Checks & Automatic Active-Active Failover
+# Dynamically resolves target cluster by Label, Instance Name, or Auto Round-Robin
 # ==============================================================================
 
 - name: Dispatch Workload Job to AAP Gateway Cluster
@@ -16,7 +15,7 @@
     - "../vars/deploy_job.yml"
 
   vars:
-    # Allow extra-vars overrides (e.g. via GitHub Actions workflow inputs)
+    # Allow extra-vars overrides (e.g., via GitHub Actions workflow inputs)
     active_target_aap: "{{ target_aap_override | default(target_aap) | default('auto') }}"
     active_job_name: "{{ deploy_job_name_override | default(deploy_job_name) }}"
     active_job_limit: "{{ deploy_job_limit_override | default(deploy_job_limit) }}"
@@ -30,13 +29,13 @@
         run_number: "{{ lookup('env', 'GITHUB_RUN_NUMBER') | default(1, true) | int }}"
         total_clusters: "{{ aap_instances | length }}"
 
-    - name: Set fallback round-robin target cluster
+    - name: Set fallback round-robin target cluster when target is 'auto'
       ansible.builtin.set_fact:
         selected_cluster: "{{ aap_instances[run_number | int % total_clusters | int] }}"
       when: active_target_aap in ['auto', '', none]
 
     # --------------------------------------------------------------------------
-    # 2. Label/Name Match Target Resolution
+    # 2. Target Resolution by Label or Name (dc1, dc2, production, non-production)
     # --------------------------------------------------------------------------
     - name: Match target AAP cluster by label or instance name
       ansible.builtin.set_fact:
@@ -44,23 +43,25 @@
       loop: "{{ aap_instances }}"
       when:
         - active_target_aap not in ['auto', '', none]
-        - active_target_aap in item.labels or active_target_aap == item.name
+        - (active_target_aap in (item.labels | default([]))) or (active_target_aap == item.name)
 
     - name: Verify valid target cluster was resolved from configuration
       ansible.builtin.assert:
         that:
           - selected_cluster is defined
-        fail_msg: "Target AAP cluster matching '{{ active_target_aap }}' was not found in aap_instances!"
+        fail_msg: >-
+          Target AAP cluster matching '{{ active_target_aap }}' was not found in aap_instances!
+          Valid labels: dc1, dc2, production, non-production, auto, or instance names.
 
     # --------------------------------------------------------------------------
-    # 4. Execution Summary & Launch
+    # 3. Execution Summary & Launch
     # --------------------------------------------------------------------------
     - name: Display calculated dispatch parameters
       ansible.builtin.debug:
         msg: >-
           Dispatching '{{ active_job_name }}' [Limit: {{ active_job_limit }}]
-          to Operational Target Cluster '{{ selected_cluster.name }}' ({{ selected_cluster.host }})
-          [Failover Triggered: {{ primary_health.status is not defined or primary_health.status != 200 }}]
+          to Target Cluster '{{ selected_cluster.name }}' ({{ selected_cluster.host }})
+          [Selector: {{ active_target_aap }}]
 
     - name: Launch Job Template on target gateway cluster
       ansible.controller.job_launch:
@@ -72,6 +73,25 @@
         limit: "{{ active_job_limit | default(omit) }}"
         wait: true
       register: job_launch_result
+
+    # --------------------------------------------------------------------------
+    # 4. Diagnostic Output Handling on Failure
+    # --------------------------------------------------------------------------
+    - name: Fetch job execution stdout on failure
+      ansible.controller.job_stdout:
+        controller_host: "{{ selected_cluster.host }}"
+        controller_username: "{{ selected_cluster.username | default(omit) }}"
+        controller_password: "{{ selected_cluster.password | default(omit) }}"
+        validate_certs: "{{ selected_cluster.validate_certs | default(false) }}"
+        id: "{{ job_launch_result.id }}"
+      register: job_stdout_result
+      when: job_launch_result.status == 'failed'
+      ignore_errors: true
+
+    - name: Display AAP Job Execution Output
+      ansible.builtin.debug:
+        var: job_stdout_result.content
+      when: job_launch_result.status == 'failed'
 
     - name: Print launched job execution status
       ansible.builtin.debug:
