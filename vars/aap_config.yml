@@ -4,23 +4,29 @@ infra_aap_configuration_use_awx_collection: false
 controller_configuration_use_awx_collection: false
 
 aap_instances:
-  - name: "AAP-Platform-Alpha"
-    host: "{{ vault_aap_gateway_a_url }}"
+  - name: "AAP-Platform-DC1"
+    host: "{{ vault_aap_gateway_dc1_url }}"
     username: "admin"
-    password: "{{ vault_aap_gateway_a_password }}"
+    password: "{{ vault_aap_gateway_dc1_password }}"
     validate_certs: false
-  - name: "AAP-Platform-Beta"
-    host: "{{ vault_aap_gateway_b_url }}"
+    labels:
+      - "dc1"
+      - "production"
+  - name: "AAP-Platform-DC2"
+    host: "{{ vault_aap_gateway_dc2_url }}"
     username: "admin"
-    password: "{{ vault_aap_gateway_b_password }}"
+    password: "{{ vault_aap_gateway_dc2_password }}"
     validate_certs: false
+    labels:
+      - "dc2"
+      - "non-production"
 
 controller_organizations:
   - name: "Default"
     description: "Primary Enterprise Organization"
 
 controller_credentials:
-  - name: "Production SSH Key"
+  - name: "Production SSH Credential"
     description: "Machine Password Credential"
     credential_type: "Machine"
     organization: "Default"
@@ -51,27 +57,45 @@ controller_inventories:
         targets:
           - "dc2_host_3"
           - "dc2_host_4"
+      - name: "production"
+        targets:
+          - "dc1_host_1"
+          - "dc1_host_2"
+      - name: "non-production"
+        targets:
+          - "dc2_host_3"
+          - "dc2_host_4"
 
 controller_hosts:
   - name: "dc1_host_1"
     inventory: "Multi-DC Production Inventory"
     variables:
-      ansible_host: "127.0.0.1"
+      ansible_host: "localhost"
   - name: "dc1_host_2"
     inventory: "Multi-DC Production Inventory"
     variables:
-      ansible_host: "127.0.0.1"
+      ansible_host: "localhost"
   - name: "dc2_host_3"
     inventory: "Multi-DC Production Inventory"
     variables:
-      ansible_host: "127.0.0.1"
+      ansible_host: "localhost"
   - name: "dc2_host_4"
     inventory: "Multi-DC Production Inventory"
     variables:
-      ansible_host: "127.0.0.1"
+      ansible_host: "localhost"
 
 controller_templates:
   - name: "Deploy Workload Job"
+    project: "GitOps Application Configs"
+    playbook: "playbooks/demorun.yml"
+    inventory: "Multi-DC Production Inventory"
+    job_type: "run"
+  - name: "Deploy Workload Job 2"
+    project: "GitOps Application Configs"
+    playbook: "playbooks/demorun.yml"
+    inventory: "Multi-DC Production Inventory"
+    job_type: "run"
+  - name: "Deploy Workload Job 3"
     project: "GitOps Application Configs"
     playbook: "playbooks/demorun.yml"
     inventory: "Multi-DC Production Inventory"

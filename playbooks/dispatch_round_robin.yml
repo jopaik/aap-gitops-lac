@@ -1,35 +1,78 @@
 ---
-- name: Round-Robin Job Dispatch Across AAP Clusters
+# ==============================================================================
+# Workload Dispatch Playbook for AAP Gateway Clusters
+# Dynamically resolves target cluster (Label-based or Round-Robin fallback)
+# ==============================================================================
+
+- name: Dispatch Workload Job to AAP Gateway Cluster
   hosts: localhost
   connection: local
   gather_facts: false
+
   vars_files:
     - "../vars/aap_config.yml"
     - "../vars/vault.yml"
+    - "../vars/deploy_job.yml"
+
+  vars:
+    # Allow extra-vars overrides (e.g. via GitHub Actions workflow inputs)
+    active_target_aap: "{{ target_aap_override | default(target_aap) | default('auto') }}"
+    active_job_name: "{{ deploy_job_name_override | default(deploy_job_name) }}"
+    active_job_limit: "{{ deploy_job_limit_override | default(deploy_job_limit) }}"
 
   tasks:
-    - name: Select Target AAP Platform Node
+    # --------------------------------------------------------------------------
+    # 1. Fallback Round-Robin Target Calculation
+    # --------------------------------------------------------------------------
+    - name: Evaluate execution run context and cluster count
       ansible.builtin.set_fact:
-        run_id: "{{ lookup('env', 'GITHUB_RUN_NUMBER') | default(now(fmt='%S'), true) | int }}"
-        
-    - name: Calculate Round-Robin Cluster Target
-      ansible.builtin.set_fact:
-        selected_aap: "{{ aap_instances[run_id | int % (aap_instances | length)] }}"
+        run_number: "{{ lookup('env', 'GITHUB_RUN_NUMBER') | default(1, true) | int }}"
+        total_clusters: "{{ aap_instances | length }}"
 
-    - name: Display Selected Gateway Node
+    - name: Set fallback round-robin target cluster
+      ansible.builtin.set_fact:
+        selected_cluster: "{{ aap_instances[run_number | int % total_clusters | int] }}"
+      when: active_target_aap in ['auto', '', none]
+
+    # --------------------------------------------------------------------------
+    # 2. Label/Name Match Target Resolution
+    # --------------------------------------------------------------------------
+    - name: Match target AAP cluster by label or instance name
+      ansible.builtin.set_fact:
+        selected_cluster: "{{ item }}"
+      loop: "{{ aap_instances }}"
+      when:
+        - active_target_aap not in ['auto', '', none]
+        - active_target_aap in item.labels or active_target_aap == item.name
+
+    - name: Verify valid target cluster was selected
+      ansible.builtin.assert:
+        that:
+          - selected_cluster is defined
+        fail_msg: "Target AAP cluster matching '{{ active_target_aap }}' was not found in aap_instances!"
+
+    # --------------------------------------------------------------------------
+    # 3. Execution Summary & Launch
+    # --------------------------------------------------------------------------
+    - name: Display calculated dispatch parameters
       ansible.builtin.debug:
-        msg: "Dispatching job run #{{ run_id }} to: {{ selected_aap.name }} ({{ selected_aap.host }})"
+        msg: >-
+          Dispatching '{{ active_job_name }}' [Limit: {{ active_job_limit }}]
+          to Target Cluster '{{ selected_cluster.name }}' ({{ selected_cluster.host }})
+          [Mode: {{ 'Explicit Target' if active_target_aap not in ['auto', ''] else 'Round-Robin' }}]
 
-    - name: Launch Workload Job Template
+    - name: Launch Job Template on target gateway cluster
       ansible.controller.job_launch:
-        job_template: "Deploy Workload Job"
-        controller_host: "{{ selected_aap.host }}"
-        controller_username: "{{ selected_aap.username }}"
-        controller_password: "{{ selected_aap.password }}"
-        validate_certs: "{{ selected_aap.validate_certs }}"
+        controller_host: "{{ selected_cluster.host }}"
+        controller_username: "{{ selected_cluster.username | default(omit) }}"
+        controller_password: "{{ selected_cluster.password | default(omit) }}"
+        controller_oauthtoken: "{{ selected_cluster.token | default(omit) }}"
+        validate_certs: "{{ selected_cluster.validate_certs | default(false) }}"
+        job_template: "{{ active_job_name }}"
+        limit: "{{ active_job_limit | default(omit) }}"
         wait: true
-      register: job_result
+      register: job_launch_result
 
-    - name: Output Job Launch Result
+    - name: Print launched job execution status
       ansible.builtin.debug:
-        var: job_result
+        msg: "Job '{{ active_job_name }}' (ID: {{ job_launch_result.id }}) finished with status: {{ job_launch_result.status }}"
