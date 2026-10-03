@@ -45,46 +45,43 @@
         validate_certs: "{{ current_aap.validate_certs }}"
       loop: "{{ controller_projects }}"
       when: controller_projects is defined
-      
-    - name: Configure Controller Inventories
+
+    - name: Manage Controller Inventories
       ansible.controller.inventory:
+        controller_host: "{{ gateway_instance.host }}"
+        controller_username: "{{ gateway_instance.username | default(omit) }}"
+        controller_password: "{{ gateway_instance.password | default(omit) }}"
+        validate_certs: "{{ gateway_instance.validate_certs | default(false) }}"
         name: "{{ item.name }}"
         description: "{{ item.description | default(omit) }}"
         organization: "{{ item.organization }}"
-        state: present
-        controller_host: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        validate_certs: "{{ current_aap.validate_certs }}"
-      loop: "{{ controller_inventories }}"
-      when: controller_inventories is defined
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ controller_inventories | default([]) }}"
 
-    - name: Configure Controller Hosts
-      ansible.controller.host:
-        name: "{{ item.name }}"
-        inventory: "{{ item.inventory }}"
-        variables: "{{ item.variables | default(omit) }}"
-        state: present
-        controller_host: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        validate_certs: "{{ current_aap.validate_certs }}"
-      loop: "{{ controller_hosts }}"
-      when: controller_hosts is defined
-
-    - name: Configure Controller Groups
+    - name: Manage Controller Inventory Groups
       ansible.controller.group:
+        controller_host: "{{ gateway_instance.host }}"
+        controller_username: "{{ gateway_instance.username | default(omit) }}"
+        controller_password: "{{ gateway_instance.password | default(omit) }}"
+        validate_certs: "{{ gateway_instance.validate_certs | default(false) }}"
         name: "{{ item.name }}"
         inventory: "{{ item.inventory }}"
-        hosts: "{{ item.hosts | default(omit) }}"
-        state: present
-        controller_host: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        validate_certs: "{{ current_aap.validate_certs }}"
-      loop: "{{ controller_groups }}"
-      when: controller_groups is defined
+        hosts: "{{ item.hosts | default([]) }}"
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ controller_groups | default([]) }}"
 
+    - name: Manage Controller Hosts
+      ansible.controller.host:
+        controller_host: "{{ gateway_instance.host }}"
+        controller_username: "{{ gateway_instance.username | default(omit) }}"
+        controller_password: "{{ gateway_instance.password | default(omit) }}"
+        validate_certs: "{{ gateway_instance.validate_certs | default(false) }}"
+        name: "{{ item.name }}"
+        inventory: "{{ item.inventory }}"
+        variables: "{{ item.variables | default({}) }}"
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ controller_hosts | default([]) }}"
+      
     - name: Configure Controller Job Templates
       ansible.controller.job_template:
         name: "{{ item.name }}"
