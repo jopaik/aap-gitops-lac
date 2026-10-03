@@ -53,46 +53,6 @@
         fail_msg: "Target AAP cluster matching '{{ active_target_aap }}' was not found in aap_instances!"
 
     # --------------------------------------------------------------------------
-    # 3. Pre-Flight Health Check & Failover Logic
-    # --------------------------------------------------------------------------
-    - name: Test health endpoint on primary target cluster
-      ansible.builtin.uri:
-        url: "{{ selected_cluster.host }}/api/v2/ping/"
-        method: GET
-        validate_certs: "{{ selected_cluster.validate_certs | default(false) }}"
-        status_code: 200
-      register: primary_health
-      ignore_errors: true
-
-    - name: Log health check result for primary cluster
-      ansible.builtin.debug:
-        msg: >-
-          Primary cluster '{{ selected_cluster.name }}' health check returned status 
-          {{ primary_health.status | default('FAILED') }}.
-
-    - name: Select fallback cluster if primary is unreachable or returning 503
-      ansible.builtin.set_fact:
-        selected_cluster: "{{ (aap_instances | rejectattr('name', 'equalto', selected_cluster.name) | list) | first }}"
-      when: primary_health.status is not defined or primary_health.status != 200
-
-    - name: Test health endpoint on secondary fallback cluster
-      ansible.builtin.uri:
-        url: "{{ selected_cluster.host }}/api/v2/ping/"
-        method: GET
-        validate_certs: "{{ selected_cluster.validate_certs | default(false) }}"
-        status_code: 200
-      register: secondary_health
-      when: primary_health.status is not defined or primary_health.status != 200
-      ignore_errors: true
-
-    - name: Verify at least one Active-Active AAP gateway cluster is operational
-      ansible.builtin.assert:
-        that:
-          - (primary_health.status is defined and primary_health.status == 200) or
-            (secondary_health.status is defined and secondary_health.status == 200)
-        fail_msg: "All target AAP gateway clusters are offline or returning service errors (503)!"
-
-    # --------------------------------------------------------------------------
     # 4. Execution Summary & Launch
     # --------------------------------------------------------------------------
     - name: Display calculated dispatch parameters
