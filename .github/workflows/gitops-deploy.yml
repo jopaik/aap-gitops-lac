@@ -27,7 +27,7 @@ jobs:
         run: |
           ansible-playbook playbooks/dispatch_round_robin.yml --vault-password-file .vault_pass
         env:
-          ANSIBLE_NO_LOG: "False"
+          ANSIBLE_NO_LOG: "True"
           
       - name: Clean up Vault Password File
         if: always()
