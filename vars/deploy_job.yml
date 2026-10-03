@@ -12,4 +12,4 @@ deploy_job_limit: "dc1"
 
 # Target AAP cluster selector
 # Options: 'auto' (round-robin via GITHUB_RUN_NUMBER), 'dc1', 'dc2', 'production', 'non-production', 'AAP-Platform-DC1', 'AAP-Platform-DC2'
-target_aap: "dc1"
+target_aap: "production"
