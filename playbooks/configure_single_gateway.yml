@@ -1,98 +1,110 @@
 ---
-- name: "Configure AAP Platform Node: {{ current_aap.name }}"
-  block:
-    - name: Configure Controller Organizations
-      ansible.controller.organization:
-        name: "{{ item.name }}"
-        description: "{{ item.description | default(omit) }}"
-        state: present
-        controller_host: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        validate_certs: "{{ current_aap.validate_certs }}"
-      loop: "{{ controller_organizations }}"
-      when: controller_organizations is defined
+# ==============================================================================
+# Single Gateway Configuration Tasks
+# Executed iteratively against each AAP cluster instance in aap_instances
+# ==============================================================================
 
-    - name: Configure Controller Credentials
-      ansible.controller.credential:
-        name: "{{ item.name }}"
-        description: "{{ item.description | default(omit) }}"
-        credential_type: "{{ item.credential_type }}"
-        organization: "{{ item.organization }}"
-        inputs: "{{ item.inputs }}"
-        state: present
-        controller_host: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        validate_certs: "{{ current_aap.validate_certs }}"
-      loop: "{{ controller_credentials }}"
-      when: controller_credentials is defined
+- name: Manage Controller Organizations
+  ansible.controller.organization:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ controller_organizations | default([]) }}"
 
-    - name: Configure Controller Projects
-      ansible.controller.project:
-        name: "{{ item.name }}"
-        description: "{{ item.description | default(omit) }}"
-        scm_type: "{{ item.scm_type }}"
-        scm_url: "{{ item.scm_url }}"
-        scm_branch: "{{ item.scm_branch | default(omit) }}"
-        scm_update_on_launch: "{{ item.scm_update_on_launch | default(omit) }}"
-        organization: "{{ item.organization }}"
-        wait: "{{ item.wait | default(true) }}"
-        state: present
-        controller_host: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        validate_certs: "{{ current_aap.validate_certs }}"
-      loop: "{{ controller_projects }}"
-      when: controller_projects is defined
+- name: Manage Controller Credentials
+  ansible.controller.credential:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    credential_type: "{{ item.credential_type }}"
+    organization: "{{ item.organization }}"
+    inputs: "{{ item.inputs }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ controller_credentials | default([]) }}"
 
-    - name: Manage Controller Inventories
-      ansible.controller.inventory:
-        controller_host: "{{ gateway_instance.host }}"
-        controller_username: "{{ gateway_instance.username | default(omit) }}"
-        controller_password: "{{ gateway_instance.password | default(omit) }}"
-        validate_certs: "{{ gateway_instance.validate_certs | default(false) }}"
-        name: "{{ item.name }}"
-        description: "{{ item.description | default(omit) }}"
-        organization: "{{ item.organization }}"
-        state: "{{ item.state | default('present') }}"
-      loop: "{{ controller_inventories | default([]) }}"
+- name: Manage Controller Inventories
+  ansible.controller.inventory:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    organization: "{{ item.organization }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ controller_inventories | default([]) }}"
 
-    - name: Manage Controller Inventory Groups
-      ansible.controller.group:
-        controller_host: "{{ gateway_instance.host }}"
-        controller_username: "{{ gateway_instance.username | default(omit) }}"
-        controller_password: "{{ gateway_instance.password | default(omit) }}"
-        validate_certs: "{{ gateway_instance.validate_certs | default(false) }}"
-        name: "{{ item.name }}"
-        inventory: "{{ item.inventory }}"
-        hosts: "{{ item.hosts | default([]) }}"
-        state: "{{ item.state | default('present') }}"
-      loop: "{{ controller_groups | default([]) }}"
+- name: Manage Controller Inventory Groups
+  ansible.controller.group:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    inventory: "{{ item.inventory }}"
+    hosts: "{{ item.hosts | default([]) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ controller_groups | default([]) }}"
 
-    - name: Manage Controller Hosts
-      ansible.controller.host:
-        controller_host: "{{ gateway_instance.host }}"
-        controller_username: "{{ gateway_instance.username | default(omit) }}"
-        controller_password: "{{ gateway_instance.password | default(omit) }}"
-        validate_certs: "{{ gateway_instance.validate_certs | default(false) }}"
-        name: "{{ item.name }}"
-        inventory: "{{ item.inventory }}"
-        variables: "{{ item.variables | default({}) }}"
-        state: "{{ item.state | default('present') }}"
-      loop: "{{ controller_hosts | default([]) }}"
-      
-    - name: Configure Controller Job Templates
-      ansible.controller.job_template:
-        name: "{{ item.name }}"
-        project: "{{ item.project }}"
-        playbook: "{{ item.playbook }}"
-        inventory: "{{ item.inventory }}"
-        job_type: "{{ item.job_type | default('run') }}"
-        state: present
-        controller_host: "{{ current_aap.host }}"
-        controller_username: "{{ current_aap.username }}"
-        controller_password: "{{ current_aap.password }}"
-        validate_certs: "{{ current_aap.validate_certs }}"
-      loop: "{{ controller_templates }}"
-      when: controller_templates is defined
+- name: Manage Controller Hosts
+  ansible.controller.host:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    inventory: "{{ item.inventory }}"
+    variables: "{{ item.variables | default({}) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ controller_hosts | default([]) }}"
+
+- name: Manage Controller Projects
+  ansible.controller.project:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    organization: "{{ item.organization }}"
+    scm_type: "{{ item.scm_type }}"
+    scm_url: "{{ item.scm_url }}"
+    scm_branch: "{{ item.scm_branch | default('main') }}"
+    scm_update_on_launch: "{{ item.scm_update_on_launch | default(false) }}"
+    wait: "{{ item.wait | default(true) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ controller_projects | default([]) }}"
+
+- name: Wait for SCM Project Synchronization
+  ansible.controller.project_update:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    wait: true
+  loop: "{{ controller_projects | default([]) }}"
+  when: controller_projects is defined and controller_projects | length > 0
+
+- name: Manage Controller Job Templates
+  ansible.controller.job_template:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    project: "{{ item.project }}"
+    playbook: "{{ item.playbook }}"
+    inventory: "{{ item.inventory }}"
+    job_type: "{{ item.job_type | default('run') }}"
+    limit: "{{ item.limit | default(omit) }}"
+    ask_limit_on_launch: "{{ item.ask_limit_on_launch | default(true) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ controller_templates | default([]) }}"
