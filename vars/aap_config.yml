@@ -90,13 +90,19 @@ controller_templates:
     playbook: "playbooks/demorun.yml"
     inventory: "Multi-DC Production Inventory"
     job_type: "run"
+    limit: "dc1"                  # Default limit configured on the template
+    ask_limit_on_launch: true    # Allows API/job_launch overrides at runtime
   - name: "Deploy Workload Job 2"
     project: "GitOps Application Configs"
     playbook: "playbooks/demorun.yml"
     inventory: "Multi-DC Production Inventory"
     job_type: "run"
+    limit: "dc1"                  # Default limit configured on the template
+    ask_limit_on_launch: true    # Allows API/job_launch overrides at runtime
   - name: "Deploy Workload Job 3"
     project: "GitOps Application Configs"
     playbook: "playbooks/demorun.yml"
     inventory: "Multi-DC Production Inventory"
     job_type: "run"
+    limit: "dc1"                  # Default limit configured on the template
+    ask_limit_on_launch: true    # Allows API/job_launch overrides at runtime
