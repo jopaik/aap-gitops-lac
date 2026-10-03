@@ -4,7 +4,7 @@
 # ==============================================================================
 
 # Target Job Template to launch on the selected cluster
-deploy_job_name: "Deploy Workload Job"
+deploy_job_name: "Deploy Workload Job 2"
 
 # Execution limit to constrain host execution
 # Options: 'dc1', 'dc2', 'production', 'non-production', or hostnames like 'dc1_host_1'
