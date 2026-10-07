@@ -1,7 +1,7 @@
 
 # Multi-Active Multi-Region Red Hat Ansible Automation Platform with GitOps
 
-A production-grade GitOps pipeline for Active-Active multi-datacenter Red Hat Ansible Automation Platform (AAP) setups. Uses GitHub Actions and `ansible.controller` modules to manage declarative platform configuration on `main` and handle workload dispatch on `deploy`.
+A production-grade GitOps pipeline for Multi-active Multi-region Red Hat Ansible Automation Platform (AAP) setups. Uses GitHub Actions and `ansible.controller` modules to manage declarative platform configuration on `main` and handle workload dispatch on `deploy`.
 
 ---
 
