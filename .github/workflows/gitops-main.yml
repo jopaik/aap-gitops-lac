@@ -27,7 +27,7 @@ jobs:
         run: |
           ansible-playbook playbooks/configure_aap.yml --vault-password-file .vault_pass
         env:
-          ANSIBLE_NO_LOG: "False"
+          ANSIBLE_NO_LOG: "True"
 
       # - name: Round-Robin Job Dispatch
       #   run: |
