@@ -41,18 +41,6 @@
     state: "{{ item.state | default('present') }}"
   loop: "{{ controller_inventories | default([]) }}"
 
-- name: Manage Controller Inventory Groups
-  ansible.controller.group:
-    controller_host: "{{ current_aap.host }}"
-    controller_username: "{{ current_aap.username | default(omit) }}"
-    controller_password: "{{ current_aap.password | default(omit) }}"
-    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
-    name: "{{ item.name }}"
-    inventory: "{{ item.inventory }}"
-    hosts: "{{ item.hosts | default([]) }}"
-    state: "{{ item.state | default('present') }}"
-  loop: "{{ controller_groups | default([]) }}"
-
 - name: Manage Controller Hosts
   ansible.controller.host:
     controller_host: "{{ current_aap.host }}"
@@ -64,6 +52,18 @@
     variables: "{{ item.variables | default({}) }}"
     state: "{{ item.state | default('present') }}"
   loop: "{{ controller_hosts | default([]) }}"
+
+- name: Manage Controller Inventory Groups
+  ansible.controller.group:
+    controller_host: "{{ current_aap.host }}"
+    controller_username: "{{ current_aap.username | default(omit) }}"
+    controller_password: "{{ current_aap.password | default(omit) }}"
+    validate_certs: "{{ current_aap.validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    inventory: "{{ item.inventory }}"
+    hosts: "{{ item.hosts | default([]) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ controller_groups | default([]) }}"
 
 - name: Manage Controller Projects
   ansible.controller.project:
