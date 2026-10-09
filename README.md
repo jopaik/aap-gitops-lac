@@ -180,7 +180,7 @@ $$\text{Target Index} = \text{GITHUB\_RUN\_NUMBER} \pmod{\text{length}(\text{aap
 
 * **Zero-Downtime Operations:** Maintain continuous execution for business-critical automation tasks spanning multiple clusters across multiple geographic regions.
 
-> **Note:** Not all workloads require federated multi-cluster topologies; a single-cluster featuring HA/DR provides a production-ready solution.
+> **Note:** Not all workloads require federated multi-cluster topologies; a single-cluster featuring [HA/DR](https://ansible-tmm.github.io/solution-guides/README-AAP-HA-DR-OpenShift) provides a production-ready solution.
 
 * **Seamless Operating System Updates:** Divert current workloads to DC2, permitting maintenance or platform OS upgrades on AAP nodes in DC1 without service interruption.
 
