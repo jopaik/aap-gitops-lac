@@ -124,7 +124,7 @@ The automated GitOps pipeline decouples platform infrastructure management from 
 * **Playbook Entrypoint:** `playbooks/configure_aap.yml` $\rightarrow$ `playbooks/configure_single_gateway.yml`
 
 1. **Trigger & Environment Setup**:
-* Pushing to `main` (or running `workflow_dispatch`) spawns a runner inside `quay.io/jopaik/aap-runner:jp1` (contains [Supported execution environment](https://catalog.redhat.com/en/software/containers/ansible-automation-platform-26/ee-supported-rhel9/66fed7d69bed203587475579) with [Red Hat Ansible Certified Content Collection](https://www.redhat.com/en/technologies/management/ansible/content-collections)) .
+* Pushing to `main` (or running `workflow_dispatch`) spawns a runner inside `quay.io/jopaik/aap-runner:jp1` (which contains a [Supported Execution Environment](https://catalog.redhat.com/en/software/containers/ansible-automation-platform-26/ee-supported-rhel9/66fed7d69bed203587475579) with [Red Hat Ansible Certified Content Collections](https://www.redhat.com/en/technologies/management/ansible/content-collections)).
 * The pipeline fetches `ANSIBLE_VAULT_PASSWORD` from GitHub Secrets, generates a transient `.vault_pass` file, and applies strict file permissions (`chmod 600`).
 
 
