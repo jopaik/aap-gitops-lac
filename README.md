@@ -175,7 +175,16 @@ $$\text{Target Index} = \text{GITHUB\_RUN\_NUMBER} \pmod{\text{length}(\text{aap
 4. **Transient Cleanup**:
 * A final step enforced by `if: always()` permanently deletes `.vault_pass` from the container workspace.
 
+---
+## Key Use Cases
 
+* **Zero-Downtime Operations:** Maintain continuous execution for business-critical automation tasks spanning multiple clusters across multiple geographic regions.
+
+> **Note:** Not all workloads require federated multi-cluster topologies; a single-cluster featuring HA/DR provides a production-ready solution.
+
+* **Seamless Operating System Updates:** Divert current workloads to DC2, permitting maintenance or platform OS upgrades on AAP nodes in DC1 without service interruption.
+
+* **Major Platform Migrations:** Operate distinct AAP version releases side by side across environments, enabling controlled, phased migration of job workloads.
 
 ---
 
