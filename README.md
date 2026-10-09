@@ -156,15 +156,9 @@ The automated GitOps pipeline decouples platform infrastructure management from 
 * Pushing to `deploy` (or running `workflow_dispatch`) triggers the workload dispatch pipeline.
 * Dispatch variables (`deploy_job_name`, `deploy_job_limit`, `target_aap`) are loaded from `vars/deploy_job.yml` and can be overridden dynamically using workflow inputs or `extra-vars` (`target_aap_override`, `deploy_job_name_override`, `deploy_job_limit_override`).
 
-
 2. **Flexible Target Resolution**:
 * **Explicit Label/Name Selection**: If `target_aap` is set to a label (`dc1`, `dc2`, `production`, `non-production`) or instance name (`AAP-Platform-DC1`), the playbook inspects `item.labels` and `item.name` across `aap_instances` to target that specific cluster.
-* **Auto Round-Robin Fallback**: If `target_aap` is set to `auto` (or omitted), target selection alternates dynamically using integer modulo arithmetic on the active execution context:
-
-$$\text{Target Index} = \text{GITHUB\_RUN\_NUMBER} \pmod{\text{length}(\text{aap\_instances})}$$
-
-
-
+* **Auto Round-Robin Fallback**: If `target_aap` is set to `auto` 
 
 3. **Synchronous Execution, Limit Overrides & Diagnostics**:
 * Calls `ansible.controller.job_launch` against the resolved target cluster to launch `deploy_job_name` with `limit: {{ deploy_job_limit }}`.
