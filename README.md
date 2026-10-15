@@ -174,7 +174,7 @@ The automated GitOps pipeline decouples platform infrastructure management from 
 
 * **Zero-Downtime Operations:** Maintain continuous execution for business-critical automation tasks spanning multiple clusters across multiple geographic regions.
 
-> **Note:** Not all workloads require federated multi-cluster topologies; a single-cluster featuring [HA/DR](https://ansible-tmm.github.io/solution-guides/README-AAP-HA-DR-OpenShift) provides a production-ready solution.
+> **Note:** Federated multi-cluster topologies work well in conjunction with [AAP HA/DR](https://ansible-tmm.github.io/solution-guides/README-AAP-HA-DR-OpenShift) architecture that provides a production-ready environment.
 
 * **Seamless Operating System Updates:** Divert current workloads to DC2, permitting maintenance or platform OS upgrades on AAP nodes in DC1 without service interruption.
 
